@@ -6,533 +6,776 @@
 <title>Control de Pagos — Fabricación Propia</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-:root{--navy:#1c2b3a;--blue:#2d4a6b;--blue2:#3a6491;--green:#1a7a4a;--green-l:#edf6f1;--orange:#c0522a;--orange-l:#fef0e8;--amber:#b8860b;--amber-l:#fdf8ec;--red-l:#fdf0ef;--blue-l:#edf2fd;--tx:#1c2b3a;--tx2:#5a7080;--bd:#c5d5e8;--bg:#f5f7fa;--sf:#fff;--r:10px}
+:root{
+  --navy:#1c2b3a;--blue:#2d4a6b;--blue2:#3a6491;
+  --green:#1a7a4a;--green-l:#edf6f1;--green-d:#155f38;
+  --red:#b91c1c;--red-l:#fef2f2;--red-m:#fecaca;--red-d:#991b1b;
+  --orange:#c0522a;--orange-l:#fef0e8;
+  --amber:#b8860b;--amber-l:#fdf8ec;
+  --tx:#1c2b3a;--tx2:#5a7080;--bd:#c5d5e8;--bg:#f5f7fa;--sf:#fff;--r:10px
+}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--tx);font-size:13px}
-nav{background:var(--navy);color:#fff;padding:0 24px;display:flex;align-items:center;height:52px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.25);gap:12px}
-.brand{font-size:15px;font-weight:600;flex:1}.brand span{color:#7eb8f0;font-weight:400}
+
+/* NAV */
+nav{background:var(--navy);color:#fff;padding:0 24px;display:flex;align-items:center;height:52px;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.3);gap:12px}
+.brand{font-size:15px;font-weight:700;flex:1;letter-spacing:-.2px}
+.brand span{color:#7eb8f0;font-weight:400}
 .tabs{display:flex;height:100%}
-.tab{padding:0 16px;height:100%;display:flex;align-items:center;color:rgba(255,255,255,.6);cursor:pointer;font-size:12px;font-weight:500;border-bottom:3px solid transparent;transition:all .15s;user-select:none}
-.tab:hover{color:#fff;background:rgba(255,255,255,.06)}
-.tab.active{color:#fff;border-bottom-color:#5eaaf0}
-.upd{font-size:11px;color:rgba(255,255,255,.35)}
-#loadBar{position:fixed;top:52px;left:0;right:0;height:3px;background:linear-gradient(90deg,#5eaaf0,#1a7a4a);z-index:200;transition:opacity .4s;display:none}
-.page{display:none;padding:24px;max-width:1200px;margin:0 auto}
+.tab{padding:0 18px;height:100%;display:flex;align-items:center;color:rgba(255,255,255,.6);cursor:pointer;font-size:12px;font-weight:500;border-bottom:3px solid transparent;transition:all .15s;user-select:none;gap:6px}
+.tab:hover{color:#fff;background:rgba(255,255,255,.07)}
+.tab.active{color:#fff;border-bottom-color:#ef4444}
+.tab.active.tab-hist{border-bottom-color:#5eaaf0}
+.tab.active.tab-det{border-bottom-color:#34d399}
+.upd{font-size:11px;color:rgba(255,255,255,.35);white-space:nowrap}
+#loadBar{position:fixed;top:52px;left:0;right:0;height:3px;background:linear-gradient(90deg,#ef4444,#f97316);z-index:200;display:none;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* PAGES */
+.page{display:none;padding:24px;max-width:1240px;margin:0 auto}
 .page.active{display:block}
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:22px}
-.kpi{background:var(--sf);border:.5px solid var(--bd);border-radius:var(--r);padding:14px 16px;border-left:4px solid transparent}
-.kpi.g{border-left-color:var(--green)}.kpi.o{border-left-color:var(--orange)}.kpi.b{border-left-color:var(--blue2)}.kpi.a{border-left-color:var(--amber)}.kpi.n{border-left-color:var(--navy)}
+
+/* ALERT BANNER — PAGOS PENDIENTES */
+.alert-banner{background:linear-gradient(135deg,#7f1d1d,#991b1b);border-radius:var(--r);padding:20px 24px;margin-bottom:20px;color:#fff;display:flex;align-items:center;gap:20px;box-shadow:0 4px 16px rgba(185,28,28,.3)}
+.alert-icon{font-size:36px;flex-shrink:0}
+.alert-body{flex:1}
+.alert-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.alert-sub{font-size:13px;color:rgba(255,255,255,.8)}
+.alert-amount{text-align:right;flex-shrink:0}
+.alert-amount-val{font-size:28px;font-weight:800;color:#fca5a5;line-height:1}
+.alert-amount-lbl{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px}
+
+/* KPI GRIDS */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.kpi-grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--sf);border:.5px solid var(--bd);border-radius:var(--r);padding:14px 16px;border-left:4px solid transparent;transition:box-shadow .15s}
+.kpi:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.kpi.red{border-left-color:var(--red);background:var(--red-l)}
+.kpi.g{border-left-color:var(--green)}
+.kpi.b{border-left-color:var(--blue2)}
+.kpi.a{border-left-color:var(--amber)}
+.kpi.n{border-left-color:var(--navy)}
 .kpi-lbl{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
 .kpi-val{font-size:22px;font-weight:700;line-height:1}
+.kpi-val.danger{color:var(--red)}
+.kpi-val.success{color:var(--green)}
 .kpi-sub{font-size:11px;color:var(--tx2);margin-top:4px}
+
+/* CARDS */
 .card{background:var(--sf);border:.5px solid var(--bd);border-radius:var(--r);padding:18px 20px;margin-bottom:18px}
+.card.danger-card{border:.5px solid var(--red-m);background:#fff8f8}
 .card-ttl{font-size:13px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.card-ttl .badge-count{background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px}
+
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
-@media(max-width:720px){.two{grid-template-columns:1fr}}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:18px}
+@media(max-width:800px){.two,.three{grid-template-columns:1fr}}
 .cw{position:relative;width:100%}
+
+/* SECTION DIVIDER */
+.section-div{display:flex;align-items:center;gap:12px;margin:24px 0 16px}
+.section-div-line{flex:1;height:1px;background:var(--bd)}
+.section-div-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2);white-space:nowrap}
+
+/* TABLES */
 table{width:100%;border-collapse:collapse;font-size:12px}
-th{background:var(--navy);color:#fff;padding:7px 10px;text-align:left;font-weight:500;font-size:11px;letter-spacing:.3px}
+th{background:var(--navy);color:#fff;padding:8px 10px;text-align:left;font-weight:500;font-size:11px;letter-spacing:.3px}
 th:first-child{border-radius:5px 0 0 0}th:last-child{border-radius:0 5px 0 0}
 td{padding:7px 10px;border-bottom:.5px solid var(--bd);vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:nth-child(even) td{background:#f8fafc}
+tr.pending-row{background:#fff8f8 !important}
+tr.pending-row:nth-child(even) td{background:#fef2f2 !important}
+tr.pending-row td{border-bottom-color:#fecaca}
 .num{text-align:right;font-variant-numeric:tabular-nums}.ctr{text-align:center}
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
-.br{background:var(--red-l);color:#a33}.ba{background:var(--amber-l);color:#7a5800}
-.bg{background:var(--green-l);color:var(--green)}.bb{background:var(--blue-l);color:var(--blue)}
-.bx{background:#f0f2f5;color:#555}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-pend{background:#fef2f2;color:var(--red);border:.5px solid var(--red-m)}
+.badge-fin{background:var(--green-l);color:var(--green-d);border:.5px solid #9fd4b8}
+.badge-env{background:var(--green-l);color:var(--green-d)}
+.badge-bord{background:#edf2fd;color:var(--blue2)}
+.badge-conf{background:#fdf8ec;color:var(--amber)}
+.badge-gray{background:#f0f2f5;color:#555}
+
+/* BAR */
 .bw{display:flex;align-items:center;gap:6px}
 .bbg{flex:1;height:5px;background:#e8edf2;border-radius:3px;overflow:hidden}
-.bf{height:100%;background:var(--green);border-radius:3px}
+.bf{height:100%;border-radius:3px}
 .bp{font-size:11px;color:var(--tx2);min-width:34px;text-align:right}
+
+/* FILTERS */
 .frow{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
-.flbl{font-size:11px;color:var(--tx2)}
+.flbl{font-size:11px;color:var(--tx2);font-weight:500}
 input[type=text],select{padding:5px 9px;border:.5px solid var(--bd);border-radius:6px;font-size:12px;color:var(--tx);background:var(--sf);outline:none}
-input[type=text]:focus,select:focus{border-color:var(--blue2)}
-.leg{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px}
-.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2)}
-.ld{width:10px;height:10px;border-radius:2px}
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--bd);border-top-color:var(--blue2);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+input[type=text]:focus,select:focus{border-color:var(--blue2);box-shadow:0 0 0 2px rgba(58,100,145,.12)}
+
+/* STATUS */
+.status-bar{border-radius:7px;padding:10px 14px;font-size:12px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.status-loading{background:#eff6ff;border:.5px solid #b5d4f4;color:#1a3a5c}
+.status-ok{background:var(--green-l);border:.5px solid #9fd4b8;color:#0f4a28}
+.status-err{background:var(--red-l);border:.5px solid var(--red-m);color:#7a1a1a}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--bd);border-top-color:var(--blue2);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
-.err{color:#a33;font-size:12px;padding:8px 0}
-.status-bar{background:#eff6ff;border:.5px solid #b5d4f4;border-radius:7px;padding:10px 14px;font-size:12px;color:#1a3a5c;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.status-ok{background:var(--green-l);border-color:#9fd4b8;color:#0f4a28}
-.status-err{background:var(--red-l);border-color:#f09595;color:#7a1a1a}
+
+/* TALLER PENDING CARD */
+.taller-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:4px}
+.taller-card{background:var(--sf);border:.5px solid var(--red-m);border-radius:8px;padding:12px 14px;border-left:3px solid var(--red)}
+.taller-card-name{font-weight:700;font-size:12px;color:var(--tx);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.taller-card-monto{font-size:18px;font-weight:800;color:var(--red);line-height:1;margin-bottom:4px}
+.taller-card-sub{font-size:11px;color:var(--tx2)}
 </style>
 </head>
 <body>
 <div id="loadBar"></div>
 <nav>
-  <div class="brand">Control de Pagos <span>/ Fabricación Propia</span></div>
+  <div class="brand">⚠ Control de Pagos <span>/ Fabricación Propia</span></div>
   <div class="tabs">
-    <div class="tab active" onclick="show('resumen',this)">Resumen</div>
-    <div class="tab" onclick="show('historico',this)">Histórico</div>
-    <div class="tab" onclick="show('detalle',this)">Detalle</div>
+    <div class="tab active" onclick="show('pendientes',this)">🔴 Pagos Pendientes</div>
+    <div class="tab tab-hist" onclick="show('historico',this)">📊 Histórico</div>
+    <div class="tab tab-det" onclick="show('detalle',this)">📋 Detalle completo</div>
   </div>
-  <div class="upd" id="updLabel">Cargando datos...</div>
+  <div class="upd" id="updLabel">Cargando...</div>
 </nav>
 
-<!-- RESUMEN -->
-<div id="resumen" class="page active">
-  <div id="statusBar" class="status-bar"><span class="spinner"></span>Conectando con Google Sheets...</div>
-  <div class="kpi-grid">
-    <div class="kpi g"><div class="kpi-lbl">Total pagado histórico</div><div class="kpi-val" id="k1">—</div><div class="kpi-sub" id="k1s">cargando...</div></div>
-    <div class="kpi o"><div class="kpi-lbl">Monto en confección</div><div class="kpi-val" id="k2">—</div><div class="kpi-sub" id="k2s">—</div></div>
-    <div class="kpi b"><div class="kpi-lbl">Órdenes totales</div><div class="kpi-val" id="k3">—</div><div class="kpi-sub" id="k3s">—</div></div>
-    <div class="kpi a"><div class="kpi-lbl">Precio prom. / orden</div><div class="kpi-val" id="k4">—</div><div class="kpi-sub" id="k4s">—</div></div>
-    <div class="kpi n"><div class="kpi-lbl">Talleres distintos</div><div class="kpi-val" id="k5">—</div><div class="kpi-sub" id="k5s">—</div></div>
+<!-- ═══════════════════════ PAGOS PENDIENTES (pestaña principal) ═══ -->
+<div id="pendientes" class="page active">
+
+  <div id="statusBar" class="status-bar status-loading">
+    <span class="spinner"></span>Conectando con Google Sheets en vivo...
   </div>
+
+  <!-- ALERT BANNER -->
+  <div class="alert-banner" id="alertBanner">
+    <div class="alert-icon">🚨</div>
+    <div class="alert-body">
+      <div class="alert-title">Pagos pendientes de pago a talleres</div>
+      <div class="alert-sub" id="alertSub">Cargando datos...</div>
+    </div>
+    <div class="alert-amount">
+      <div class="alert-amount-val" id="alertMonto">—</div>
+      <div class="alert-amount-lbl">Total a pagar</div>
+    </div>
+  </div>
+
+  <!-- KPIs PENDIENTES -->
+  <div class="kpi-grid">
+    <div class="kpi red">
+      <div class="kpi-lbl">Monto pendiente</div>
+      <div class="kpi-val danger" id="kp1">—</div>
+      <div class="kpi-sub" id="kp1s">—</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-lbl">Órdenes pendientes</div>
+      <div class="kpi-val danger" id="kp2">—</div>
+      <div class="kpi-sub" id="kp2s">—</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-lbl">Talleres con deuda</div>
+      <div class="kpi-val danger" id="kp3">—</div>
+      <div class="kpi-sub" id="kp3s">—</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-lbl">Meses con pendientes</div>
+      <div class="kpi-val danger" id="kp4">—</div>
+      <div class="kpi-sub" id="kp4s">—</div>
+    </div>
+    <div class="kpi g">
+      <div class="kpi-lbl">Ya pagado (estos meses)</div>
+      <div class="kpi-val success" id="kp5">—</div>
+      <div class="kpi-sub" id="kp5s">—</div>
+    </div>
+  </div>
+
+  <!-- PENDIENTE POR TALLER (cards) -->
+  <div class="card danger-card">
+    <div class="card-ttl">
+      🏭 Deuda por taller — monto a pagar
+      <span class="badge-count" id="cntTalleres">0</span>
+    </div>
+    <div class="taller-grid" id="tallerGrid"></div>
+  </div>
+
+  <!-- GRÁFICO: pendiente vs pagado por mes + por taller -->
   <div class="two">
     <div class="card">
-      <div class="card-ttl"><span class="dot" style="background:var(--green)"></span>Pagos por mes (CLP)</div>
-      <div class="leg"><span class="li"><span class="ld" style="background:#1a7a4a"></span>Pagado</span><span class="li"><span class="ld" style="background:#2d4a6b;border:1px dashed #3a6491"></span>Acumulado</span></div>
-      <div class="cw" style="height:230px"><canvas id="ch1" role="img" aria-label="Pagos mensuales a talleres">Gráfico de barras por mes.</canvas></div>
+      <div class="card-ttl"><span style="color:var(--red)">●</span> Pendiente vs pagado por mes (Abr–Jun 2026)</div>
+      <div class="cw" style="height:220px"><canvas id="chPendMes" role="img" aria-label="Pendiente vs pagado por mes"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-ttl"><span class="dot" style="background:var(--blue2)"></span>Distribución de estados</div>
-      <div class="cw" style="height:230px"><canvas id="ch2" role="img" aria-label="Distribución de estados de órdenes">Gráfico de dona por estado.</canvas></div>
+      <div class="card-ttl"><span style="color:var(--red)">●</span> Pendiente por taller (top 10)</div>
+      <div class="cw" style="height:220px"><canvas id="chPendTaller" role="img" aria-label="Montos pendientes por taller"></canvas></div>
     </div>
   </div>
-  <div class="card">
-    <div class="card-ttl"><span class="dot" style="background:var(--blue2)"></span>Top 10 talleres — monto pagado histórico</div>
-    <table><thead><tr><th>Pos.</th><th>Taller</th><th class="num">Monto total</th><th class="ctr">Órdenes</th><th class="ctr">Unidades</th><th class="num">Precio prom.</th><th>Participación</th></tr></thead><tbody id="tbTop"></tbody></table>
-  </div>
-</div>
 
-<!-- HISTÓRICO -->
-<div id="historico" class="page">
-  <div class="card">
-    <div class="card-ttl"><span class="dot" style="background:var(--green)"></span>Evolución mensual</div>
-    <div class="cw" style="height:270px"><canvas id="ch3" role="img" aria-label="Barras mensuales con acumulado">Histograma.</canvas></div>
-  </div>
-  <div class="card">
-    <div class="card-ttl"><span class="dot" style="background:var(--green)"></span>Tabla resumen por mes</div>
-    <table><thead><tr><th>Mes</th><th class="num">Monto total</th><th class="ctr">Órdenes</th><th class="ctr">Talleres</th><th class="num">Precio prom.</th><th class="ctr">% del total</th><th class="num">Acumulado</th></tr></thead><tbody id="tbHist"></tbody></table>
-  </div>
-</div>
-
-<!-- DETALLE -->
-<div id="detalle" class="page">
-  <div class="card">
-    <div class="card-ttl"><span class="dot" style="background:var(--orange)"></span>Todas las órdenes</div>
+  <!-- TABLA DETALLE PENDIENTES -->
+  <div class="card danger-card">
+    <div class="card-ttl">
+      📋 Detalle de órdenes con pago pendiente
+      <span class="badge-count" id="cntPend">0</span>
+    </div>
     <div class="frow">
       <span class="flbl">Mes:</span>
-      <select id="fMes" onchange="renderDet()"><option value="">Todos los meses</option></select>
+      <select id="fpMes" onchange="renderPend()">
+        <option value="">Todos los meses</option>
+        <option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option>
+      </select>
       <span class="flbl">Taller:</span>
-      <input type="text" id="fTaller" placeholder="Buscar taller..." oninput="renderDet()" style="width:160px">
-      <span class="flbl">Estado:</span>
-      <select id="fEst" onchange="renderDet()"><option value="">Todos</option><option>Enviado</option><option>Recibido GLP</option><option>Bordado</option><option>Confeccion</option><option>Avance 30%</option></select>
+      <input type="text" id="fpTaller" placeholder="Buscar taller..." oninput="renderPend()" style="width:160px">
     </div>
-    <table><thead><tr><th>Mes</th><th>N° Pedido</th><th>Taller</th><th class="ctr">Cant.</th><th class="num">Precio</th><th class="num">Monto</th><th class="ctr">Estado</th></tr></thead><tbody id="tbDet"></tbody></table>
+    <table>
+      <thead><tr>
+        <th>Mes</th><th>N° Pedido</th><th>Taller</th>
+        <th class="ctr">Cant.</th><th class="num">Precio unit.</th>
+        <th class="num">Monto</th><th class="ctr">Estado confección</th><th class="ctr">Pago</th>
+      </tr></thead>
+      <tbody id="tbPend"></tbody>
+    </table>
+    <div id="pendFoot" style="padding:8px 0;font-size:11px;color:var(--tx2)"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ HISTÓRICO ═══ -->
+<div id="historico" class="page">
+
+  <!-- KPIs histórico -->
+  <div class="kpi-grid">
+    <div class="kpi g"><div class="kpi-lbl">Total pagado histórico</div><div class="kpi-val success" id="kh1">—</div><div class="kpi-sub" id="kh1s">—</div></div>
+    <div class="kpi b"><div class="kpi-lbl">Órdenes totales</div><div class="kpi-val" id="kh2">—</div><div class="kpi-sub" id="kh2s">—</div></div>
+    <div class="kpi a"><div class="kpi-lbl">Precio prom. / orden</div><div class="kpi-val" id="kh3">—</div><div class="kpi-sub" id="kh3s">—</div></div>
+    <div class="kpi n"><div class="kpi-lbl">Talleres distintos</div><div class="kpi-val" id="kh4">—</div><div class="kpi-sub" id="kh4s">—</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-ttl"><span style="color:var(--green)">●</span> Evolución mensual de pagos</div>
+    <div class="cw" style="height:260px"><canvas id="chHist" role="img" aria-label="Pagos por mes con acumulado"></canvas></div>
+  </div>
+
+  <div class="two">
+    <div class="card">
+      <div class="card-ttl"><span style="color:var(--green)">●</span> Resumen por mes</div>
+      <table>
+        <thead><tr><th>Mes</th><th class="num">Monto</th><th class="ctr">Órdenes</th><th class="ctr">Talleres</th><th class="ctr">% total</th><th class="num">Acumulado</th></tr></thead>
+        <tbody id="tbHistMes"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-ttl"><span style="color:var(--blue2)">●</span> Top 10 talleres — monto histórico</div>
+      <table>
+        <thead><tr><th>Pos.</th><th>Taller</th><th class="num">Monto</th><th class="ctr">Órdenes</th><th>Participación</th></tr></thead>
+        <tbody id="tbTop"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ DETALLE ═══ -->
+<div id="detalle" class="page">
+  <div class="card">
+    <div class="card-ttl"><span style="color:var(--green)">●</span> Todas las órdenes</div>
+    <div class="frow">
+      <span class="flbl">Mes:</span>
+      <select id="fMes" onchange="renderDet()"><option value="">Todos</option></select>
+      <span class="flbl">Taller:</span>
+      <input type="text" id="fTaller" placeholder="Buscar..." oninput="renderDet()" style="width:140px">
+      <span class="flbl">Estado confección:</span>
+      <select id="fEst" onchange="renderDet()"><option value="">Todos</option><option>Enviado</option><option>Recibido GLP</option><option>Bordado</option><option>Confeccion</option></select>
+      <span class="flbl">Pago:</span>
+      <select id="fPago" onchange="renderDet()">
+        <option value="">Todos</option>
+        <option value="pendiente">Pago pendiente</option>
+        <option value="finalizado">Pago finalizado</option>
+        <option value="sin-col">Sin columna pago</option>
+      </select>
+    </div>
+    <table>
+      <thead><tr>
+        <th>Mes</th><th>N° Pedido</th><th>Taller</th>
+        <th class="ctr">Cant.</th><th class="num">Precio</th><th class="num">Monto</th>
+        <th class="ctr">Estado conf.</th><th class="ctr">Pago</th>
+      </tr></thead>
+      <tbody id="tbDet"></tbody>
+    </table>
     <div id="detFoot" style="padding:8px 0;font-size:11px;color:var(--tx2)"></div>
   </div>
 </div>
 
 <script>
-/* ── CONFIG: URLs de Google Sheets publicadas como CSV ─────────────── */
+/* ══════════════════════════════════════════════════════════════════
+   CONFIG — URLs por hoja
+══════════════════════════════════════════════════════════════════ */
 const SHEETS = [
-  {mes:'Mayo 2025',    url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=925947047&single=true&output=csv'},
-  {mes:'Junio 2025',   url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=1632684208&single=true&output=csv'},
-  {mes:'Julio 2025',   url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=998685868&single=true&output=csv'},
-  {mes:'Agosto 2025',  url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=429883639&single=true&output=csv'},
-  {mes:'Septiembre 2025',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=689406763&single=true&output=csv'},
-  {mes:'Octubre 2025', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=2082297861&single=true&output=csv'},
-  {mes:'Noviembre 2025',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=785674751&single=true&output=csv'},
-  {mes:'Diciembre 2025',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=1570360447&single=true&output=csv'},
-  {mes:'Enero 2026',   url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=1159052782&single=true&output=csv'},
-  {mes:'Febrero 2026', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=1424143252&single=true&output=csv'},
-  {mes:'Marzo 2026',   url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=1172504955&single=true&output=csv'},
-  {mes:'Abril 2026',   url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=51316626&single=true&output=csv'},
-  {mes:'Mayo 2026',    url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=326496781&single=true&output=csv'},
-  {mes:'Junio 2026',   url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=334207480&single=true&output=csv'},
+  {mes:'Mayo 2025',      url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=925947047&single=true&output=csv',      tienePago:false},
+  {mes:'Junio 2025',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=1632684208&single=true&output=csv',     tienePago:false},
+  {mes:'Julio 2025',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=998685868&single=true&output=csv',      tienePago:false},
+  {mes:'Agosto 2025',    url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=429883639&single=true&output=csv',      tienePago:false},
+  {mes:'Septiembre 2025',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=689406763&single=true&output=csv',      tienePago:false},
+  {mes:'Octubre 2025',   url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=2082297861&single=true&output=csv',     tienePago:false},
+  {mes:'Noviembre 2025', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=785674751&single=true&output=csv',      tienePago:false},
+  {mes:'Diciembre 2025', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=1570360447&single=true&output=csv',     tienePago:false},
+  {mes:'Enero 2026',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=1159052782&single=true&output=csv',     tienePago:false},
+  {mes:'Febrero 2026',   url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=1424143252&single=true&output=csv',     tienePago:false},
+  {mes:'Marzo 2026',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=1172504955&single=true&output=csv',     tienePago:false},
+  {mes:'Abril 2026',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=51316626&single=true&output=csv',      tienePago:true},
+  {mes:'Mayo 2026',      url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=326496781&single=true&output=csv',      tienePago:true},
+  {mes:'Junio 2026',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=334207480&single=true&output=csv',      tienePago:true},
 ];
 
-/* ── COLUMN MAPS por mes ───────────────────────────────────────────
-   Cada hoja tiene distinta estructura. Mapeamos:
-   headerRow = fila (0-index) donde están los headers
-   np    = columna N° Pedido
-   taller= columna Taller
-   precio= columna Precio (unit)
-   cant  = columna Cantidad
-   estado= columna Estado
-   envio = columna Fecha envio (para detectar "pagado")
-   ──────────────────────────────────────────────────────────────── */
+/* ── COLUMN MAPS por mes ─────────────────────────────────────────
+   hr=headerRow(0-idx), np, taller, precio, cant, estado, pago
+   La columna "Pago" existe solo desde Abril 2026.
+   Para meses sin columna Pago: el campo pago se auto-detecta
+   buscando la columna "pago" en el header.
+──────────────────────────────────────────────────────────────── */
 const COL_MAP = {
-  'Mayo 2025':     {hr:2, np:'B', taller:'H', precio:'I', cant:'G', estado:'P', envio:'O'},
-  'Junio 2025':    {hr:2, np:'B', taller:'H', precio:'I', cant:'G', estado:'P', envio:'O'},
-  'Julio 2025':    {hr:2, np:'B', taller:'I', precio:'J', cant:'H', estado:'S', envio:'R'},
-  'Agosto 2025':   {hr:2, np:'A', taller:'H', precio:'I', cant:'G', estado:'U', envio:'T'},
-  'Septiembre 2025':{hr:2, np:'A', taller:'H', precio:'I', cant:'G', estado:'U', envio:'T'},
-  'Octubre 2025':  {hr:2, np:'A', taller:'H', precio:'I', cant:'G', estado:'U', envio:'T'},
-  'Noviembre 2025':{hr:2, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', envio:'U'},
-  'Diciembre 2025':{hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', envio:'U'},
-  'Enero 2026':    {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', envio:'U'},
-  'Febrero 2026':  {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', envio:'U'},
-  'Marzo 2026':    {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', envio:'U'},
-  'Abril 2026':    {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', envio:'U'},
-  'Mayo 2026':     {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', envio:'U'},
-  'Junio 2026':    {hr:3, np:'A', taller:'K', precio:'L', cant:'G', estado:'X', envio:'W'},
+  'Mayo 2025':      {hr:2, np:'B', taller:'H', precio:'I', cant:'G', estado:'P'},
+  'Junio 2025':     {hr:2, np:'B', taller:'H', precio:'I', cant:'G', estado:'P'},
+  'Julio 2025':     {hr:2, np:'B', taller:'I', precio:'J', cant:'H', estado:'S'},
+  'Agosto 2025':    {hr:2, np:'A', taller:'H', precio:'I', cant:'G', estado:'U'},
+  'Septiembre 2025':{hr:2, np:'A', taller:'H', precio:'I', cant:'G', estado:'U'},
+  'Octubre 2025':   {hr:2, np:'A', taller:'H', precio:'I', cant:'G', estado:'U'},
+  'Noviembre 2025': {hr:2, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'},
+  'Diciembre 2025': {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'},
+  'Enero 2026':     {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'},
+  'Febrero 2026':   {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'},
+  'Marzo 2026':     {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'},
+  'Abril 2026':     {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'}, // pago auto-detect
+  'Mayo 2026':      {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'}, // pago auto-detect
+  'Junio 2026':     {hr:3, np:'A', taller:'K', precio:'L', cant:'G', estado:'X'}, // pago auto-detect
 };
 
-/* ── HELPERS ───────────────────────────────────────────────────── */
-const ci = col => col.charCodeAt(0) - 65; // A→0, B→1...
-const fmt = n => n == null || isNaN(n) ? '—' : '$' + Math.round(n).toLocaleString('es-CL');
-const fmtM = n => n >= 1e6 ? '$' + (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? '$' + Math.round(n/1e3) + 'K' : '$' + n;
+/* ── HELPERS ─────────────────────────────────────────────────── */
+const ci   = col => col.toUpperCase().charCodeAt(0) - 65;
+const fmt  = n => (n == null || isNaN(n)) ? '—' : '$' + Math.round(n).toLocaleString('es-CL');
+const fmtM = n => n >= 1e6 ? '$' + (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? '$' + Math.round(n/1e3) + 'K' : '$' + Math.round(n);
+const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
 
 function parseCSV(text) {
-  const rows = [];
-  let cur = '', inQ = false, row = [];
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (c === '"') { inQ = !inQ; }
-    else if (c === ',' && !inQ) { row.push(cur.trim()); cur = ''; }
-    else if ((c === '\n' || c === '\r') && !inQ) {
-      if (c === '\r' && text[i+1] === '\n') i++;
-      row.push(cur.trim()); rows.push(row); row = []; cur = '';
-    } else { cur += c; }
+  const rows=[]; let cur='', inQ=false, row=[];
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(c==='"'){inQ=!inQ;}
+    else if(c===','&&!inQ){row.push(cur.trim());cur='';}
+    else if((c==='\n'||c==='\r')&&!inQ){
+      if(c==='\r'&&text[i+1]==='\n')i++;
+      row.push(cur.trim());rows.push(row);row=[];cur='';
+    }else{cur+=c;}
   }
-  if (cur || row.length) { row.push(cur.trim()); rows.push(row); }
+  if(cur||row.length){row.push(cur.trim());rows.push(row);}
   return rows;
 }
 
-const ESTADOS_PAGADO = ['enviado','recibido glp','recibido en cppo','bordado'];
-const ESTADOS_CONF   = ['confeccion','confección','avance'];
-
-function estadoNorm(e) {
-  if (!e) return '';
-  const l = e.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  if (l.includes('enviado')) return 'Enviado';
-  if (l.includes('galpon') || l.includes('glp')) return 'Recibido GLP';
-  if (l.includes('cppo')) return 'Recibido CPPO';
-  if (l.includes('bordado')) return 'Bordado';
-  if (l.includes('confeccion') || l.includes('confección')) return 'Confeccion';
-  if (l.includes('70') || l.includes('avance 7')) return 'Avance 70%';
-  if (l.includes('50') || l.includes('avance 5')) return 'Avance 50%';
-  if (l.includes('30') || l.includes('avance 3')) return 'Avance 30%';
-  if (l.includes('corte')) return 'Corte';
+function estadoNorm(e){
+  if(!e)return'';const l=norm(e);
+  if(l.includes('enviado'))return'Enviado';
+  if(l.includes('galpon')||l.includes('glp'))return'Recibido GLP';
+  if(l.includes('cppo'))return'Recibido CPPO';
+  if(l.includes('bordado'))return'Bordado';
+  if(l.includes('confeccion'))return'Confeccion';
+  if(l.includes('70')||l.includes('avance 7'))return'Avance 70%';
+  if(l.includes('50')||l.includes('avance 5'))return'Avance 50%';
+  if(l.includes('30')||l.includes('avance 3'))return'Avance 30%';
+  if(l.includes('corte'))return'Corte';
   return e;
 }
 
-function esPagado(est) {
-  const l = (est||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  return ESTADOS_PAGADO.some(s => l.includes(s));
+function pagoNorm(p){
+  if(!p)return'';const l=norm(p);
+  if(l.includes('pendiente'))return'Pago pendiente';
+  if(l.includes('finalizado')||l.includes('pagado'))return'Pago finalizado';
+  return p;
 }
 
-function estadoBadge(e) {
-  const l = (e||'').toLowerCase();
-  if (l.includes('enviado')) return `<span class="badge bg">${e}</span>`;
-  if (l.includes('bordado')) return `<span class="badge bb">${e}</span>`;
-  if (l.includes('glp') || l.includes('cppo')) return `<span class="badge bg">${e}</span>`;
-  if (l.includes('confec') || l.includes('avance 7')) return `<span class="badge bb">${e}</span>`;
-  if (l.includes('avance 5')) return `<span class="badge ba">${e}</span>`;
-  if (l.includes('avance 3') || l.includes('30%')) return `<span class="badge br">${e}</span>`;
-  if (l.includes('corte')) return `<span class="badge ba">${e}</span>`;
-  return `<span class="badge bx">${e}</span>`;
+function estadoBadge(e){
+  const l=(e||'').toLowerCase();
+  if(l.includes('enviado')||l.includes('glp')||l.includes('cppo'))return`<span class="badge badge-env">${e}</span>`;
+  if(l.includes('bordado'))return`<span class="badge badge-bord">${e}</span>`;
+  if(l.includes('confec')||l.includes('avance'))return`<span class="badge badge-conf">${e}</span>`;
+  return`<span class="badge badge-gray">${e||'—'}</span>`;
 }
 
-/* ── GLOBAL STATE ──────────────────────────────────────────────── */
-let ALL_ROWS = []; // {mes, np, taller, cantidad, precio, monto, estado, pagado}
-let CHARTS = {};
-let loaded = 0, errors = 0;
+function pagoBadge(p){
+  if(!p)return`<span class="badge badge-gray">—</span>`;
+  if(p==='Pago pendiente')return`<span class="badge badge-pend">⚠ Pago pendiente</span>`;
+  if(p==='Pago finalizado')return`<span class="badge badge-fin">✓ Pagado</span>`;
+  return`<span class="badge badge-gray">${p}</span>`;
+}
 
-/* ── FETCH ALL SHEETS ──────────────────────────────────────────── */
-async function loadAll() {
-  document.getElementById('loadBar').style.display = 'block';
-  const promises = SHEETS.map(s => fetchSheet(s));
-  await Promise.allSettled(promises);
-  document.getElementById('loadBar').style.display = 'none';
+/* ── GLOBAL STATE ────────────────────────────────────────────── */
+let ALL_ROWS=[];
+let CHARTS={};
+let loaded=0, errors=0;
+
+/* ── FETCH ───────────────────────────────────────────────────── */
+async function loadAll(){
+  document.getElementById('loadBar').style.display='block';
+  await Promise.allSettled(SHEETS.map(s=>fetchSheet(s)));
+  document.getElementById('loadBar').style.display='none';
   finalize();
 }
 
-async function fetchSheet({mes, url}) {
-  try {
-    const res = await fetch(url, {cache:'no-cache'});
-    if (!res.ok) throw new Error(res.status);
-    const text = await res.text();
-    const rows = parseCSV(text);
-    const map = COL_MAP[mes];
-    if (!map) return;
+async function fetchSheet({mes,url,tienePago}){
+  try{
+    const res=await fetch(url,{cache:'no-cache'});
+    if(!res.ok)throw new Error(res.status);
+    const text=await res.text();
+    const rows=parseCSV(text);
+    const map=COL_MAP[mes];
+    if(!map)return;
+    const hRow=rows[map.hr];
+    if(!hRow)return;
 
-    const hRow = rows[map.hr];
-    if (!hRow) return;
-
-    // Detectar columna taller y precio buscando el header (más robusto que letra fija)
-    const colOf = name => {
-      const idx = hRow.findIndex(h => h && h.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(name));
-      return idx >= 0 ? idx : -1;
+    // Buscar columnas por nombre en el header (robusto)
+    const colOf=name=>{
+      const idx=hRow.findIndex(h=>h&&norm(h).includes(norm(name)));
+      return idx>=0?idx:-1;
     };
 
-    const iNP     = Math.max(ci(map.np),     colOf('pedido'));
-    const iTaller = Math.max(ci(map.taller),  colOf('taller'));
-    const iPrecio = Math.max(ci(map.precio),  colOf('precio '));
-    const iCant   = Math.max(ci(map.cant),    colOf('cant. pedida'));
-    const iEst    = Math.max(ci(map.estado),  colOf('estado'));
+    const iNP    =colOf('pedido')>=0?colOf('pedido'):ci(map.np);
+    const iTaller=colOf('taller')>=0?colOf('taller'):ci(map.taller);
+    const iPrecio=colOf('precio ')>=0?colOf('precio '):ci(map.precio); // "precio " con espacio para no matchear "precio de corte"
+    const iCant  =colOf('cant. pedida')>=0?colOf('cant. pedida'):ci(map.cant);
+    const iEst   =colOf('estado')>=0?colOf('estado'):ci(map.estado);
+    // Columna "Pago" — buscar en header
+    const iPago  =colOf('pago');   // -1 si no existe
 
-    for (let r = map.hr + 1; r < rows.length; r++) {
-      const row = rows[r];
-      if (!row || row.every(c => !c)) continue;
-      const np     = (row[iNP]     || '').trim();
-      const taller = (row[iTaller] || '').trim();
-      const precio = parseFloat((row[iPrecio]||'').replace(/[^\d.]/g,'')) || 0;
-      const cant   = parseFloat((row[iCant]  ||'').replace(/[^\d.]/g,'')) || 0;
-      const estRaw = (row[iEst]    || '').trim();
-      const est    = estadoNorm(estRaw);
+    for(let r=map.hr+1;r<rows.length;r++){
+      const row=rows[r];
+      if(!row||row.every(c=>!c))continue;
+      const np    =(row[iNP]||'').trim();
+      const taller=(row[iTaller]||'').trim();
+      const precio=parseFloat((row[iPrecio]||'').replace(/[^\d.]/g,''))||0;
+      const cant  =parseFloat((row[iCant]||'').replace(/[^\d.]/g,''))||0;
+      const estRaw=(row[iEst]||'').trim();
+      const pagoRaw=iPago>=0?(row[iPago]||'').trim():'';
 
-      if (!np || !taller || np.toLowerCase().includes('pedido') || np.toLowerCase().includes('n°')) continue;
-      if (np.length > 20) continue; // saltar filas raras
+      if(!np||!taller)continue;
+      if(norm(np).includes('pedido')||norm(np).includes('n°'))continue;
+      if(np.length>25)continue;
 
-      const monto = precio * cant;
-      ALL_ROWS.push({mes, np, taller: taller.toUpperCase(), cantidad: cant, precio, monto, estado: est, pagado: esPagado(est)});
+      const est =estadoNorm(estRaw);
+      const pago=pagoNorm(pagoRaw);
+      const monto=precio*cant;
+
+      ALL_ROWS.push({mes,np,taller:taller.toUpperCase(),cantidad:cant,precio,monto,estado:est,pago,tienePago});
     }
     loaded++;
-  } catch(e) {
+  }catch(e){
     errors++;
-    console.warn(`Error cargando ${mes}:`, e);
+    console.warn(`Error ${mes}:`,e);
   }
 }
 
-/* ── FINALIZE: calcular y renderizar ───────────────────────────── */
-function finalize() {
-  // Status bar
-  const sb = document.getElementById('statusBar');
-  if (errors === 0) {
-    sb.className = 'status-bar status-ok';
-    sb.innerHTML = `✓ Datos cargados en vivo desde Google Sheets — ${loaded} hojas · ${ALL_ROWS.length.toLocaleString('es-CL')} registros`;
-  } else if (loaded === 0) {
-    sb.className = 'status-bar status-err';
-    sb.innerHTML = `⚠ No se pudieron cargar los datos. Verifica que las hojas estén publicadas en Sheets (Archivo → Compartir → Publicar en la web → CSV).`;
-  } else {
-    sb.className = 'status-bar status-ok';
-    sb.innerHTML = `✓ ${loaded} hojas cargadas · ${errors} con error (pueden estar vacías) · ${ALL_ROWS.length.toLocaleString('es-CL')} registros`;
+/* ── FINALIZE ────────────────────────────────────────────────── */
+function finalize(){
+  const sb=document.getElementById('statusBar');
+  const n=ALL_ROWS.length;
+  if(errors===0){
+    sb.className='status-bar status-ok';
+    sb.innerHTML=`✓ Datos en vivo desde Google Sheets — ${loaded} hojas cargadas · ${n.toLocaleString('es-CL')} registros`;
+  }else if(loaded===0){
+    sb.className='status-bar status-err';
+    sb.innerHTML='⚠ No se pudieron cargar los datos. Verifica que las hojas estén publicadas como CSV en Google Sheets.';
+  }else{
+    sb.className='status-bar status-ok';
+    sb.innerHTML=`✓ ${loaded} hojas cargadas${errors>0?` · ${errors} sin datos`:''} · ${n.toLocaleString('es-CL')} registros`;
   }
+  const now=new Date();
+  document.getElementById('updLabel').textContent=
+    `Act. ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
-  const now = new Date();
-  document.getElementById('updLabel').textContent = `Act. ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
-
-  calcAndRender();
+  calcPendientes();
+  calcHistorico();
   populateFiltros();
+  renderPend();
   renderDet();
 }
 
-function calcAndRender() {
-  const pagados = ALL_ROWS.filter(r => r.pagado);
-  const totalPag = pagados.reduce((a,r) => a + r.monto, 0);
-  const enConf  = ALL_ROWS.filter(r => !r.pagado).reduce((a,r) => a + r.monto, 0);
+/* ══════════════════════════════════════════════════════════════
+   PENDIENTES — cálculo y render
+══════════════════════════════════════════════════════════════ */
+function calcPendientes(){
+  // Filas con columna Pago (Abr-Jun 2026)
+  const conPago=ALL_ROWS.filter(r=>r.tienePago);
+  const pendientes=conPago.filter(r=>r.pago==='Pago pendiente');
+  const finalizados=conPago.filter(r=>r.pago==='Pago finalizado');
 
-  const talleresSet = new Set(ALL_ROWS.map(r => r.taller).filter(Boolean));
-
-  // Precio prom (solo con precio > 0)
-  const conPrecio = ALL_ROWS.filter(r => r.precio > 0);
-  const precProm  = conPrecio.length ? conPrecio.reduce((a,r)=>a+r.precio,0)/conPrecio.length : 0;
+  const totalPend =pendientes.reduce((a,r)=>a+r.monto,0);
+  const totalFin  =finalizados.reduce((a,r)=>a+r.monto,0);
+  const talleresPend=new Set(pendientes.map(r=>r.taller));
+  const mesesPend   =new Set(pendientes.map(r=>r.mes));
 
   // KPIs
-  setText('k1', fmtM(totalPag));
-  setText('k1s', `${pagados.length.toLocaleString('es-CL')} órdenes pagadas`);
-  setText('k2', fmtM(enConf));
-  setText('k2s', `${ALL_ROWS.filter(r=>!r.pagado).length} órdenes pendientes`);
-  setText('k3', ALL_ROWS.length.toLocaleString('es-CL'));
-  setText('k3s', `${loaded} meses · ${SHEETS.length} hojas`);
-  setText('k4', fmt(precProm));
-  setText('k4s', 'Promedio histórico');
-  setText('k5', talleresSet.size.toLocaleString('es-CL'));
-  setText('k5s', 'Talleres únicos');
+  setText('kp1',fmtM(totalPend));
+  setText('kp1s',`en ${pendientes.length} líneas`);
+  setText('kp2',pendientes.length.toString());
+  setText('kp2s',`de ${conPago.length} órdenes en Abr-Jun 2026`);
+  setText('kp3',talleresPend.size.toString());
+  setText('kp3s','talleres con saldo pendiente');
+  setText('kp4',mesesPend.size.toString());
+  setText('kp4s',[...mesesPend].join(', '));
+  setText('kp5',fmtM(totalFin));
+  setText('kp5s',`${finalizados.length} órdenes ya pagadas`);
 
-  // Por mes
-  const byMes = {};
-  SHEETS.forEach(s => byMes[s.mes] = {mes:s.mes, monto:0, ordenes:0, talleres:new Set(), acum:0});
-  ALL_ROWS.forEach(r => {
-    if (!byMes[r.mes]) return;
-    byMes[r.mes].monto += r.monto;
-    byMes[r.mes].ordenes++;
-    byMes[r.mes].talleres.add(r.taller);
-  });
-  let acum = 0;
-  const mesData = SHEETS.map(s => {
-    const d = byMes[s.mes];
-    acum += d.monto;
-    return {...d, talleres:d.talleres.size, acum};
-  });
+  // Alert banner
+  setText('alertMonto',fmtM(totalPend));
+  setText('alertSub',`${pendientes.length} órdenes · ${talleresPend.size} talleres · meses: ${[...mesesPend].join(', ')}`);
 
-  // Top talleres
-  const byTaller = {};
-  ALL_ROWS.forEach(r => {
-    if (!r.taller) return;
-    if (!byTaller[r.taller]) byTaller[r.taller] = {monto:0, ordenes:0, unidades:0, precios:[]};
-    byTaller[r.taller].monto    += r.monto;
+  // Cards por taller
+  const byTaller={};
+  pendientes.forEach(r=>{
+    if(!byTaller[r.taller])byTaller[r.taller]={monto:0,ordenes:0};
+    byTaller[r.taller].monto+=r.monto;
     byTaller[r.taller].ordenes++;
-    byTaller[r.taller].unidades += r.cantidad;
-    if (r.precio > 0) byTaller[r.taller].precios.push(r.precio);
   });
-  const topTalleres = Object.entries(byTaller)
-    .map(([t,d]) => ({taller:t, ...d, precProm: d.precios.length ? d.precios.reduce((a,b)=>a+b)/d.precios.length : 0}))
-    .sort((a,b) => b.monto - a.monto).slice(0,10);
+  const tallerSorted=Object.entries(byTaller).sort((a,b)=>b[1].monto-a[1].monto);
+  document.getElementById('cntTalleres').textContent=tallerSorted.length;
 
-  // Estados
-  const byEst = {};
-  ALL_ROWS.forEach(r => { byEst[r.estado] = (byEst[r.estado]||0)+1; });
+  let cards='';
+  tallerSorted.forEach(([t,d])=>{
+    cards+=`<div class="taller-card">
+      <div class="taller-card-name" title="${t}">🏭 ${t}</div>
+      <div class="taller-card-monto">${fmtM(d.monto)}</div>
+      <div class="taller-card-sub">${d.ordenes} orden${d.ordenes>1?'es':''}</div>
+    </div>`;
+  });
+  document.getElementById('tallerGrid').innerHTML=cards||'<p style="color:var(--tx2);font-size:12px">No hay pagos pendientes 🎉</p>';
 
-  buildCharts(mesData, byEst);
-  renderTopTalleres(topTalleres, totalPag);
-  renderHistMes(mesData);
+  // Gráficos pendientes
+  buildPendCharts(pendientes,finalizados,tallerSorted);
 }
 
-function setText(id, v) { const el = document.getElementById(id); if(el) el.textContent = v; }
+function buildPendCharts(pend,fin,tallerSorted){
+  // CHART 1: Pendiente vs pagado por mes
+  const MESES_PAGO=['Abril 2026','Mayo 2026','Junio 2026'];
+  const pendByMes=MESES_PAGO.map(m=>pend.filter(r=>r.mes===m).reduce((a,r)=>a+r.monto,0));
+  const finByMes =MESES_PAGO.map(m=>fin.filter(r=>r.mes===m).reduce((a,r)=>a+r.monto,0));
+  const shortM=m=>m.replace(' 2026','');
 
-/* ── CHARTS ──────────────────────────────────────────────────── */
-function buildCharts(mesData, byEst) {
-  const shortMes = m => m.replace('iembre','bre').replace(' 20',"'").replace('tiembre','t.').replace('Septiembre','Sept.');
-  const labels = mesData.map(d => shortMes(d.mes));
-  const montos = mesData.map(d => d.monto);
-  const acums  = mesData.map(d => d.acum);
-
-  if (CHARTS.ch1) CHARTS.ch1.destroy();
-  CHARTS.ch1 = new Chart(document.getElementById('ch1'), {
-    data: { labels, datasets: [
-      {type:'bar',  label:'Pagado', data:montos, backgroundColor:'#1a7a4a', borderRadius:3, order:2},
-      {type:'line', label:'Acumulado', data:acums, borderColor:'#2d4a6b', borderDash:[4,3], borderWidth:1.5, pointRadius:0, fill:false, order:1, yAxisID:'y2'}
-    ]},
-    options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+  if(CHARTS.cpm)CHARTS.cpm.destroy();
+  CHARTS.cpm=new Chart(document.getElementById('chPendMes'),{
+    type:'bar',
+    data:{
+      labels:MESES_PAGO.map(shortM),
+      datasets:[
+        {label:'Pendiente',data:pendByMes,backgroundColor:'#ef4444',borderRadius:4},
+        {label:'Pagado',   data:finByMes, backgroundColor:'#1a7a4a',borderRadius:4},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10},boxWidth:10}}},
       scales:{
-        x:{ticks:{font:{size:9}, maxRotation:45, autoSkip:false}, grid:{display:false}},
-        y:{ticks:{font:{size:9}, callback:v=>fmtM(v)}, grid:{color:'#e8edf2'}},
-        y2:{position:'right', ticks:{font:{size:9}, callback:v=>fmtM(v)}, grid:{display:false}}
-      }}
+        x:{ticks:{font:{size:10}},grid:{display:false}},
+        y:{ticks:{font:{size:9},callback:v=>fmtM(v)},grid:{color:'#f0f0f0'}},
+        }}
   });
 
-  // Dona estados
-  const estLabels = Object.keys(byEst);
-  const estVals   = Object.values(byEst);
-  const estColors = estLabels.map(e => {
-    const l = e.toLowerCase();
-    if (l.includes('enviado')) return '#1a7a4a';
-    if (l.includes('glp')||l.includes('cppo')) return '#217a50';
-    if (l.includes('bordado')) return '#3a6491';
-    if (l.includes('confec')||l.includes('70')) return '#1565a8';
-    if (l.includes('50')) return '#b8860b';
-    if (l.includes('30')||l.includes('corte')) return '#c0522a';
-    return '#888';
-  });
-
-  if (CHARTS.ch2) CHARTS.ch2.destroy();
-  CHARTS.ch2 = new Chart(document.getElementById('ch2'), {
-    type:'doughnut',
-    data:{labels:estLabels, datasets:[{data:estVals, backgroundColor:estColors, borderWidth:1, borderColor:'#fff'}]},
-    options:{responsive:true, maintainAspectRatio:false, cutout:'65%',
-      plugins:{legend:{position:'right', labels:{font:{size:10}, boxWidth:10, padding:8}}}}
-  });
-
-  if (CHARTS.ch3) CHARTS.ch3.destroy();
-  CHARTS.ch3 = new Chart(document.getElementById('ch3'), {
-    data:{labels, datasets:[
-      {type:'bar',  label:'Pagado', data:montos, backgroundColor:'#1a7a4a', borderRadius:3, order:2},
-      {type:'line', label:'Acumulado', data:acums, borderColor:'#2d4a6b', borderDash:[4,3], borderWidth:1.5, pointRadius:2, pointBackgroundColor:'#2d4a6b', fill:false, order:1, yAxisID:'y2'}
-    ]},
-    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+  // CHART 2: Pendiente por taller (top 10)
+  const top10=tallerSorted.slice(0,10);
+  if(CHARTS.cpt)CHARTS.cpt.destroy();
+  CHARTS.cpt=new Chart(document.getElementById('chPendTaller'),{
+    type:'bar',
+    data:{
+      labels:top10.map(([t])=>t.length>14?t.slice(0,14)+'…':t),
+      datasets:[{label:'Pendiente',data:top10.map(([,d])=>d.monto),backgroundColor:'#ef4444',borderRadius:3}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{display:false}},
       scales:{
-        x:{ticks:{font:{size:9}, maxRotation:45, autoSkip:false}, grid:{display:false}},
-        y:{ticks:{font:{size:9}, callback:v=>fmtM(v)}, grid:{color:'#e8edf2'}},
-        y2:{position:'right', ticks:{font:{size:9}, callback:v=>fmtM(v)}, grid:{display:false}}
+        x:{ticks:{font:{size:9},callback:v=>fmtM(v)},grid:{color:'#f0f0f0'}},
+        y:{ticks:{font:{size:9}}},
       }}
   });
 }
 
-/* ── TOP TALLERES ────────────────────────────────────────────── */
-function renderTopTalleres(top, total) {
-  const max = top[0]?.monto || 1;
-  const medals = ['🥇','🥈','🥉'];
-  let h = '';
-  top.forEach((t,i) => {
-    const pct = total > 0 ? ((t.monto/total)*100).toFixed(1) : 0;
-    h += `<tr>
-      <td class="ctr">${medals[i]||`${i+1}°`}</td>
-      <td><strong>${t.taller}</strong></td>
-      <td class="num" style="color:var(--green);font-weight:600">${fmt(t.monto)}</td>
-      <td class="ctr">${t.ordenes}</td>
-      <td class="ctr">${Math.round(t.unidades).toLocaleString('es-CL')}</td>
-      <td class="num">${fmt(t.precProm)}</td>
-      <td><div class="bw"><div class="bbg"><div class="bf" style="width:${Math.round(t.monto/max*100)}%"></div></div><span class="bp">${pct}%</span></div></td>
+function renderPend(){
+  const fM=document.getElementById('fpMes').value;
+  const fT=norm(document.getElementById('fpTaller').value);
+  const rows=ALL_ROWS.filter(r=>
+    r.pago==='Pago pendiente'&&
+    (!fM||r.mes===fM)&&
+    (!fT||norm(r.taller).includes(fT))
+  );
+  document.getElementById('cntPend').textContent=rows.length;
+  const total=rows.reduce((a,r)=>a+r.monto,0);
+  let h='';
+  rows.forEach(r=>{
+    h+=`<tr class="pending-row">
+      <td>${r.mes}</td>
+      <td class="ctr"><strong>${r.np}</strong></td>
+      <td><strong>${r.taller}</strong></td>
+      <td class="ctr">${r.cantidad||'—'}</td>
+      <td class="num">${r.precio>0?fmt(r.precio):'—'}</td>
+      <td class="num" style="color:var(--red);font-weight:700">${r.monto>0?fmt(r.monto):'—'}</td>
+      <td class="ctr">${estadoBadge(r.estado)}</td>
+      <td class="ctr">${pagoBadge(r.pago)}</td>
     </tr>`;
   });
-  document.getElementById('tbTop').innerHTML = h;
+  if(!h)h=`<tr><td colspan="8" style="text-align:center;color:var(--green);padding:20px;font-weight:600">✓ Sin pagos pendientes para este filtro</td></tr>`;
+  document.getElementById('tbPend').innerHTML=h;
+  document.getElementById('pendFoot').textContent=
+    `${rows.length} órdenes pendientes · Total: ${fmt(total)}`;
 }
 
-/* ── HISTÓRICO MES ───────────────────────────────────────────── */
-function renderHistMes(mesData) {
-  const total = mesData.reduce((a,d)=>a+d.monto,0);
-  let h = '';
-  mesData.forEach(d => {
-    const pct = total > 0 ? ((d.monto/total)*100).toFixed(1) : 0;
-    const precProm = d.ordenes > 0 && d.monto > 0 ? d.monto/d.ordenes : 0;
-    h += `<tr>
+/* ══════════════════════════════════════════════════════════════
+   HISTÓRICO — cálculo y render
+══════════════════════════════════════════════════════════════ */
+function calcHistorico(){
+  const total=ALL_ROWS.reduce((a,r)=>a+r.monto,0);
+  const conPrecio=ALL_ROWS.filter(r=>r.precio>0);
+  const precProm=conPrecio.length?conPrecio.reduce((a,r)=>a+r.precio,0)/conPrecio.length:0;
+  const talleres=new Set(ALL_ROWS.map(r=>r.taller).filter(Boolean));
+
+  setText('kh1',fmtM(total)); setText('kh1s',`${ALL_ROWS.length.toLocaleString('es-CL')} órdenes · ${loaded} meses`);
+  setText('kh2',ALL_ROWS.length.toLocaleString('es-CL')); setText('kh2s',`${loaded} hojas procesadas`);
+  setText('kh3',fmt(precProm)); setText('kh3s','precio unitario promedio');
+  setText('kh4',talleres.size.toString()); setText('kh4s','talleres distintos');
+
+  // Por mes
+  const byMes={};
+  SHEETS.forEach(s=>byMes[s.mes]={mes:s.mes,monto:0,ordenes:0,talleres:new Set()});
+  ALL_ROWS.forEach(r=>{if(byMes[r.mes]){byMes[r.mes].monto+=r.monto;byMes[r.mes].ordenes++;byMes[r.mes].talleres.add(r.taller);}});
+  let acum=0;
+  const mesData=SHEETS.map(s=>{const d=byMes[s.mes];acum+=d.monto;return{...d,talleres:d.talleres.size,acum};});
+
+  // Top talleres
+  const byT={};
+  ALL_ROWS.forEach(r=>{
+    if(!r.taller)return;
+    if(!byT[r.taller])byT[r.taller]={monto:0,ordenes:0};
+    byT[r.taller].monto+=r.monto;byT[r.taller].ordenes++;
+  });
+  const topT=Object.entries(byT).sort((a,b)=>b[1].monto-a[1].monto).slice(0,10);
+
+  buildHistChart(mesData);
+  renderHistMes(mesData,total);
+  renderTop(topT,total);
+}
+
+function buildHistChart(mesData){
+  const shortM=m=>m.replace('iembre','bre').replace(' 20',"'").replace('tiembre','t.').replace('Septiembre',"Sep'");
+  const labels=mesData.map(d=>shortM(d.mes));
+  const montos=mesData.map(d=>d.monto);
+  const acums =mesData.map(d=>d.acum);
+  if(CHARTS.ch)CHARTS.ch.destroy();
+  CHARTS.ch=new Chart(document.getElementById('chHist'),{
+    data:{labels,datasets:[
+      {type:'bar', label:'Pagado',data:montos,backgroundColor:'#1a7a4a',borderRadius:3,order:2},
+      {type:'line',label:'Acumulado',data:acums,borderColor:'#2d4a6b',borderDash:[4,3],borderWidth:1.5,pointRadius:0,fill:false,order:1,yAxisID:'y2'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{font:{size:9},maxRotation:45,autoSkip:false},grid:{display:false}},
+        y:{ticks:{font:{size:9},callback:v=>fmtM(v)},grid:{color:'#f0f0f0'}},
+        y2:{position:'right',ticks:{font:{size:9},callback:v=>fmtM(v)},grid:{display:false}}
+      }}
+  });
+}
+
+function renderHistMes(mesData,total){
+  let h='';
+  mesData.forEach(d=>{
+    const pct=total>0?((d.monto/total)*100).toFixed(1):0;
+    const pp=d.ordenes>0&&d.monto>0?d.monto/d.ordenes:0;
+    h+=`<tr>
       <td>${d.mes}</td>
       <td class="num" style="color:var(--green);font-weight:600">${fmt(d.monto)}</td>
       <td class="ctr">${d.ordenes}</td>
       <td class="ctr">${d.talleres}</td>
-      <td class="num">${fmt(precProm)}</td>
       <td class="ctr">${pct}%</td>
       <td class="num">${fmt(d.acum)}</td>
     </tr>`;
   });
-  h += `<tr style="background:#edf6f1;font-weight:700">
+  h+=`<tr style="background:#edf6f1;font-weight:700">
     <td>TOTAL</td>
     <td class="num" style="color:var(--green)">${fmt(total)}</td>
-    <td class="ctr">${ALL_ROWS.length}</td><td></td><td></td>
+    <td class="ctr">${ALL_ROWS.length}</td><td></td>
     <td class="ctr">100%</td>
     <td class="num">${fmt(total)}</td>
   </tr>`;
-  document.getElementById('tbHist').innerHTML = h;
+  document.getElementById('tbHistMes').innerHTML=h;
 }
 
-/* ── FILTROS DETALLE ─────────────────────────────────────────── */
-function populateFiltros() {
-  const sel = document.getElementById('fMes');
-  SHEETS.forEach(s => {
-    const o = document.createElement('option');
-    o.value = s.mes; o.textContent = s.mes;
-    sel.appendChild(o);
+function renderTop(topT,total){
+  const max=topT[0]?.[1].monto||1;
+  const medals=['🥇','🥈','🥉'];
+  let h='';
+  topT.forEach(([t,d],i)=>{
+    const pct=total>0?((d.monto/total)*100).toFixed(1):0;
+    h+=`<tr>
+      <td class="ctr">${medals[i]||`${i+1}°`}</td>
+      <td><strong>${t}</strong></td>
+      <td class="num" style="color:var(--green);font-weight:600">${fmt(d.monto)}</td>
+      <td class="ctr">${d.ordenes}</td>
+      <td><div class="bw"><div class="bbg"><div class="bf" style="width:${Math.round(d.monto/max*100)}%;background:var(--green)"></div></div><span class="bp">${pct}%</span></div></td>
+    </tr>`;
   });
+  document.getElementById('tbTop').innerHTML=h;
 }
 
-function renderDet() {
-  const fM = document.getElementById('fMes').value;
-  const fT = document.getElementById('fTaller').value.toLowerCase();
-  const fE = document.getElementById('fEst').value.toLowerCase();
+/* ══════════════════════════════════════════════════════════════
+   DETALLE COMPLETO
+══════════════════════════════════════════════════════════════ */
+function populateFiltros(){
+  const sel=document.getElementById('fMes');
+  SHEETS.forEach(s=>{const o=document.createElement('option');o.value=s.mes;o.textContent=s.mes;sel.appendChild(o);});
+}
 
-  const filtered = ALL_ROWS.filter(r =>
-    (!fM || r.mes === fM) &&
-    (!fT || r.taller.toLowerCase().includes(fT)) &&
-    (!fE || r.estado.toLowerCase().includes(fE))
-  ).slice(0, 1000);
+function renderDet(){
+  const fM=document.getElementById('fMes').value;
+  const fT=norm(document.getElementById('fTaller').value);
+  const fE=norm(document.getElementById('fEst').value);
+  const fP=document.getElementById('fPago').value;
 
-  const totalMonto = filtered.reduce((a,r)=>a+r.monto,0);
-  let h = '';
-  filtered.forEach(r => {
-    h += `<tr>
+  const filtered=ALL_ROWS.filter(r=>{
+    if(fM&&r.mes!==fM)return false;
+    if(fT&&!norm(r.taller).includes(fT))return false;
+    if(fE&&!norm(r.estado).includes(fE))return false;
+    if(fP==='pendiente'&&r.pago!=='Pago pendiente')return false;
+    if(fP==='finalizado'&&r.pago!=='Pago finalizado')return false;
+    if(fP==='sin-col'&&r.tienePago)return false;
+    return true;
+  }).slice(0,1000);
+
+  const total=filtered.reduce((a,r)=>a+r.monto,0);
+  let h='';
+  filtered.forEach(r=>{
+    const isPend=r.pago==='Pago pendiente';
+    h+=`<tr${isPend?' class="pending-row"':''}>
       <td>${r.mes}</td>
       <td class="ctr">${r.np}</td>
       <td><strong>${r.taller}</strong></td>
       <td class="ctr">${r.cantidad||'—'}</td>
-      <td class="num">${r.precio > 0 ? fmt(r.precio) : '—'}</td>
-      <td class="num" style="color:var(--green);font-weight:600">${r.monto > 0 ? fmt(r.monto) : '—'}</td>
+      <td class="num">${r.precio>0?fmt(r.precio):'—'}</td>
+      <td class="num" style="font-weight:600;color:${isPend?'var(--red)':'var(--green)'}">${r.monto>0?fmt(r.monto):'—'}</td>
       <td class="ctr">${estadoBadge(r.estado)}</td>
+      <td class="ctr">${r.tienePago?pagoBadge(r.pago):'<span class="badge badge-gray">—</span>'}</td>
     </tr>`;
   });
-  document.getElementById('tbDet').innerHTML = h;
-  const total = ALL_ROWS.filter(r =>
-    (!fM || r.mes === fM) && (!fT || r.taller.toLowerCase().includes(fT)) && (!fE || r.estado.toLowerCase().includes(fE))
-  ).length;
-  document.getElementById('detFoot').textContent =
-    `Mostrando ${filtered.length} de ${total} registros · Total filtrado: ${fmt(totalMonto)}`;
+  document.getElementById('tbDet').innerHTML=h;
+  const totalCount=ALL_ROWS.filter(r=>{
+    if(fM&&r.mes!==fM)return false;
+    if(fT&&!norm(r.taller).includes(fT))return false;
+    if(fE&&!norm(r.estado).includes(fE))return false;
+    if(fP==='pendiente'&&r.pago!=='Pago pendiente')return false;
+    if(fP==='finalizado'&&r.pago!=='Pago finalizado')return false;
+    if(fP==='sin-col'&&r.tienePago)return false;
+    return true;
+  }).length;
+  document.getElementById('detFoot').textContent=
+    `Mostrando ${filtered.length} de ${totalCount} registros · Total filtrado: ${fmt(total)}`;
 }
 
 /* ── NAV ─────────────────────────────────────────────────────── */
-function show(id, el) {
+function show(id,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   el.classList.add('active');
 }
+
+function setText(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
 
 /* ── INIT ────────────────────────────────────────────────────── */
 loadAll();
