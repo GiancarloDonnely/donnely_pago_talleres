@@ -199,7 +199,7 @@ input[type=text]:focus,select:focus{border-color:var(--blue2);box-shadow:0 0 0 2
   <!-- GRÁFICO: pendiente vs pagado por mes + por taller -->
   <div class="two">
     <div class="card">
-      <div class="card-ttl"><span style="color:var(--red)">●</span> Pendiente vs pagado por mes (Abr–Jun 2026)</div>
+      <div class="card-ttl"><span style="color:var(--red)">●</span> Pendiente vs pagado por mes (Abr–Jul 2026)</div>
       <div class="cw" style="height:220px"><canvas id="chPendMes" role="img" aria-label="Pendiente vs pagado por mes"></canvas></div>
     </div>
     <div class="card">
@@ -213,8 +213,8 @@ input[type=text]:focus,select:focus{border-color:var(--blue2);box-shadow:0 0 0 2
     <div class="card-ttl">
       <span style="color:var(--red)">●</span> Pendiente por semana del mes
       <select id="chSemMes" onchange="buildSemChart()" style="margin-left:auto;font-size:11px">
-        <option value="">Todos los meses (Abr–Jun)</option>
-        <option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option>
+        <option value="">Todos los meses (Abr–Jul)</option>
+        <option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option><option>Julio 2026</option>
       </select>
     </div>
     <div class="cw" style="height:220px"><canvas id="chPendSemana" role="img" aria-label="Montos pendientes por semana del mes"></canvas></div>
@@ -235,7 +235,7 @@ input[type=text]:focus,select:focus{border-color:var(--blue2);box-shadow:0 0 0 2
       <span class="flbl">Mes:</span>
       <select id="fpMes" onchange="renderPend()">
         <option value="">Todos los meses</option>
-        <option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option>
+        <option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option><option>Julio 2026</option>
       </select>
       <span class="flbl" id="lblSemana" style="display:none">Semana:</span>
       <select id="fpSemana" onchange="renderPend()" style="display:none">
@@ -345,6 +345,7 @@ const SHEETS = [
   {mes:'Abril 2026',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=51316626&single=true&output=csv',      tienePago:true},
   {mes:'Mayo 2026',      url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=326496781&single=true&output=csv',      tienePago:true},
   {mes:'Junio 2026',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=334207480&single=true&output=csv',      tienePago:true},
+  {mes:'Julio 2026',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=272373084&single=true&output=csv',      tienePago:true},
 ];
 
 /* ── COLUMN MAPS por mes ─────────────────────────────────────────
@@ -368,6 +369,7 @@ const COL_MAP = {
   'Abril 2026':     {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'}, // pago auto-detect
   'Mayo 2026':      {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'}, // pago auto-detect
   'Junio 2026':     {hr:3, np:'A', taller:'K', precio:'L', cant:'G', estado:'X'}, // pago auto-detect
+  'Julio 2026':     {hr:3, np:'A', taller:'K', precio:'L', cant:'G', estado:'X'}, // pago auto-detect
 };
 
 /* ── HELPERS ─────────────────────────────────────────────────── */
@@ -619,7 +621,7 @@ function calcPendientes(){
 
 function buildPendCharts(pend,fin,tallerSorted){
   // CHART 1: Pendiente vs pagado por mes
-  const MESES_PAGO=['Abril 2026','Mayo 2026','Junio 2026'];
+  const MESES_PAGO=['Abril 2026','Mayo 2026','Junio 2026','Julio 2026'];
   const pendByMes=MESES_PAGO.map(m=>pend.filter(r=>r.mes===m).reduce((a,r)=>a+r.monto,0));
   const finByMes =MESES_PAGO.map(m=>fin.filter(r=>r.mes===m).reduce((a,r)=>a+r.monto,0));
   const shortM=m=>m.replace(' 2026','');
