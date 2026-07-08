@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Donnely — Control de Pagos Talleres</title>
+<title>Control de Pagos — Fabricación Propia</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root{
@@ -129,7 +129,8 @@ input[type=text]:focus,select:focus{border-color:var(--blue2);box-shadow:0 0 0 2
 <body>
 <div id="loadBar"></div>
 <nav>
-<div class="brand">Donnely <span>/ Control de Pagos Talleres</span></div>  <div class="tabs">
+  <div class="brand">⚠ Control de Pagos <span>/ Fabricación Propia</span></div>
+  <div class="tabs">
     <div class="tab active" onclick="show('pendientes',this)">🔴 Pagos Pendientes</div>
     <div class="tab tab-hist" onclick="show('historico',this)">📊 Histórico</div>
     <div class="tab tab-det" onclick="show('detalle',this)">📋 Detalle completo</div>
@@ -207,6 +208,18 @@ input[type=text]:focus,select:focus{border-color:var(--blue2);box-shadow:0 0 0 2
     </div>
   </div>
 
+  <!-- GRÁFICO: pendiente por semana del mes -->
+  <div class="card">
+    <div class="card-ttl">
+      <span style="color:var(--red)">●</span> Pendiente por semana del mes
+      <select id="chSemMes" onchange="buildSemChart()" style="margin-left:auto;font-size:11px">
+        <option value="">Todos los meses (Abr–Jun)</option>
+        <option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option>
+      </select>
+    </div>
+    <div class="cw" style="height:220px"><canvas id="chPendSemana" role="img" aria-label="Montos pendientes por semana del mes"></canvas></div>
+  </div>
+
   <!-- TABLA DETALLE PENDIENTES -->
   <div class="card danger-card">
     <div class="card-ttl">
@@ -214,17 +227,31 @@ input[type=text]:focus,select:focus{border-color:var(--blue2);box-shadow:0 0 0 2
       <span class="badge-count" id="cntPend">0</span>
     </div>
     <div class="frow">
+      <span class="flbl">Ver por:</span>
+      <select id="fpVista" onchange="onVistaChange()">
+        <option value="mes">Mes</option>
+        <option value="semana">Semana del mes</option>
+      </select>
       <span class="flbl">Mes:</span>
       <select id="fpMes" onchange="renderPend()">
         <option value="">Todos los meses</option>
         <option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option>
+      </select>
+      <span class="flbl" id="lblSemana" style="display:none">Semana:</span>
+      <select id="fpSemana" onchange="renderPend()" style="display:none">
+        <option value="">Todas</option>
+        <option value="1">Semana 1 (1–7)</option>
+        <option value="2">Semana 2 (8–14)</option>
+        <option value="3">Semana 3 (15–21)</option>
+        <option value="4">Semana 4 (22–28)</option>
+        <option value="5">Semana 5 (29–31)</option>
       </select>
       <span class="flbl">Taller:</span>
       <input type="text" id="fpTaller" placeholder="Buscar taller..." oninput="renderPend()" style="width:160px">
     </div>
     <table>
       <thead><tr>
-        <th>Mes</th><th>N° Pedido</th><th>Taller</th>
+        <th>Mes</th><th class="ctr">Semana</th><th>N° Pedido</th><th>Taller</th>
         <th class="ctr">Cant.</th><th class="num">Precio unit.</th>
         <th class="num">Monto</th><th class="ctr">Estado confección</th><th class="ctr">Pago</th>
       </tr></thead>
@@ -349,6 +376,42 @@ const fmt  = n => (n == null || isNaN(n)) ? '—' : '$' + Math.round(n).toLocale
 const fmtM = n => n >= 1e6 ? '$' + (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? '$' + Math.round(n/1e3) + 'K' : '$' + Math.round(n);
 const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
 
+/* ── FECHAS ──────────────────────────────────────────────────────
+   Parsea fechas en formatos: dd/mm/yyyy, yyyy-mm-dd, dd-mm-yyyy,
+   o el formato de Sheets "2026-06-16 00:00:00".
+   Devuelve un objeto Date o null.
+──────────────────────────────────────────────────────────────── */
+function parseFecha(s){
+  if(!s)return null;
+  s=String(s).trim();
+  if(!s)return null;
+  // yyyy-mm-dd (con o sin hora)
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m)return new Date(+m[1],+m[2]-1,+m[3]);
+  // dd/mm/yyyy  o  dd-mm-yyyy
+  m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  if(m){
+    let y=+m[3]; if(y<100)y+=2000;
+    return new Date(y,+m[2]-1,+m[1]);
+  }
+  return null;
+}
+
+/* Semana del mes: 1-5, según el día del mes.
+   Semana 1 = días 1-7, Semana 2 = 8-14, etc. */
+function semanaDelMes(fecha){
+  if(!fecha)return 0;
+  return Math.ceil(fecha.getDate()/7);
+}
+
+const SEMANA_LABEL = {
+  1:'Semana 1 (1–7)',
+  2:'Semana 2 (8–14)',
+  3:'Semana 3 (15–21)',
+  4:'Semana 4 (22–28)',
+  5:'Semana 5 (29–31)',
+};
+
 function parseCSV(text) {
   const rows=[]; let cur='', inQ=false, row=[];
   for(let i=0;i<text.length;i++){
@@ -437,6 +500,13 @@ async function fetchSheet({mes,url,tienePago}){
     const iEst   =colOf('estado')>=0?colOf('estado'):ci(map.estado);
     // Columna "Pago" — buscar en header
     const iPago  =colOf('pago');   // -1 si no existe
+    // Columna de fecha para clasificar por semana:
+    // prioridad → "fecha de envio" > "fecha de confeccion total" > "fecha de salida del taller real" > "fecha entrega"
+    const iFecha = colOf('fecha de envio')>=0 ? colOf('fecha de envio')
+                 : colOf('fecha de confeccion total')>=0 ? colOf('fecha de confeccion total')
+                 : colOf('salida del taller real')>=0 ? colOf('salida del taller real')
+                 : colOf('fecha entrega')>=0 ? colOf('fecha entrega')
+                 : -1;
 
     for(let r=map.hr+1;r<rows.length;r++){
       const row=rows[r];
@@ -447,6 +517,7 @@ async function fetchSheet({mes,url,tienePago}){
       const cant  =parseFloat((row[iCant]||'').replace(/[^\d.]/g,''))||0;
       const estRaw=(row[iEst]||'').trim();
       const pagoRaw=iPago>=0?(row[iPago]||'').trim():'';
+      const fechaRaw=iFecha>=0?(row[iFecha]||'').trim():'';
 
       if(!np||!taller)continue;
       if(norm(np).includes('pedido')||norm(np).includes('n°'))continue;
@@ -455,8 +526,10 @@ async function fetchSheet({mes,url,tienePago}){
       const est =estadoNorm(estRaw);
       const pago=pagoNorm(pagoRaw);
       const monto=precio*cant;
+      const fecha=parseFecha(fechaRaw);
+      const semana=semanaDelMes(fecha);
 
-      ALL_ROWS.push({mes,np,taller:taller.toUpperCase(),cantidad:cant,precio,monto,estado:est,pago,tienePago});
+      ALL_ROWS.push({mes,np,taller:taller.toUpperCase(),cantidad:cant,precio,monto,estado:est,pago,tienePago,fecha,semana});
     }
     loaded++;
   }catch(e){
@@ -585,35 +658,116 @@ function buildPendCharts(pend,fin,tallerSorted){
         y:{ticks:{font:{size:9}}},
       }}
   });
+
+  // CHART 3: Pendiente por semana del mes
+  buildSemChart();
+}
+
+/* Gráfico de pendiente por semana del mes (respeta selector de mes propio) */
+function buildSemChart(){
+  const selMes=document.getElementById('chSemMes')?document.getElementById('chSemMes').value:'';
+  const pend=ALL_ROWS.filter(r=>r.pago==='Pago pendiente'&&(!selMes||r.mes===selMes));
+
+  // Sumar por semana 1-5
+  const porSem=[1,2,3,4,5].map(s=>pend.filter(r=>r.semana===s).reduce((a,r)=>a+r.monto,0));
+  const sinFecha=pend.filter(r=>!r.semana||r.semana===0).reduce((a,r)=>a+r.monto,0);
+
+  const labels=['Sem 1','Sem 2','Sem 3','Sem 4','Sem 5'];
+  const data=[...porSem];
+  if(sinFecha>0){labels.push('Sin fecha');data.push(sinFecha);}
+
+  if(CHARTS.csem)CHARTS.csem.destroy();
+  CHARTS.csem=new Chart(document.getElementById('chPendSemana'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Pendiente',data,backgroundColor:['#ef4444','#f05545','#f26647','#f47749','#f6884b','#94a3b8'],borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.parsed.y)}`}}},
+      scales:{
+        x:{ticks:{font:{size:10}},grid:{display:false}},
+        y:{ticks:{font:{size:9},callback:v=>fmtM(v)},grid:{color:'#f0f0f0'}},
+      }}
+  });
+}
+
+/* Mostrar/ocultar selector de semana según la vista elegida */
+function onVistaChange(){
+  const vista=document.getElementById('fpVista').value;
+  const showSem=vista==='semana';
+  document.getElementById('lblSemana').style.display=showSem?'':'none';
+  document.getElementById('fpSemana').style.display=showSem?'':'none';
+  if(!showSem)document.getElementById('fpSemana').value='';
+  renderPend();
 }
 
 function renderPend(){
+  const vista=document.getElementById('fpVista').value;
   const fM=document.getElementById('fpMes').value;
   const fT=norm(document.getElementById('fpTaller').value);
-  const rows=ALL_ROWS.filter(r=>
+  const fS=document.getElementById('fpSemana').value;
+
+  let rows=ALL_ROWS.filter(r=>
     r.pago==='Pago pendiente'&&
     (!fM||r.mes===fM)&&
-    (!fT||norm(r.taller).includes(fT))
+    (!fT||norm(r.taller).includes(fT))&&
+    (!fS||String(r.semana)===fS)
   );
+
   document.getElementById('cntPend').textContent=rows.length;
   const total=rows.reduce((a,r)=>a+r.monto,0);
+
   let h='';
-  rows.forEach(r=>{
-    h+=`<tr class="pending-row">
-      <td>${r.mes}</td>
-      <td class="ctr"><strong>${r.np}</strong></td>
-      <td><strong>${r.taller}</strong></td>
-      <td class="ctr">${r.cantidad||'—'}</td>
-      <td class="num">${r.precio>0?fmt(r.precio):'—'}</td>
-      <td class="num" style="color:var(--red);font-weight:700">${r.monto>0?fmt(r.monto):'—'}</td>
-      <td class="ctr">${estadoBadge(r.estado)}</td>
-      <td class="ctr">${pagoBadge(r.pago)}</td>
-    </tr>`;
-  });
-  if(!h)h=`<tr><td colspan="8" style="text-align:center;color:var(--green);padding:20px;font-weight:600">✓ Sin pagos pendientes para este filtro</td></tr>`;
+
+  if(vista==='semana'){
+    // Agrupar por Mes → Semana
+    const grupos={};
+    rows.forEach(r=>{
+      const key=`${r.mes}||${r.semana}`;
+      if(!grupos[key])grupos[key]={mes:r.mes,semana:r.semana,rows:[],total:0};
+      grupos[key].rows.push(r);
+      grupos[key].total+=r.monto;
+    });
+    // Ordenar por mes y semana
+    const keysOrden=Object.keys(grupos).sort((a,b)=>{
+      const [ma,sa]=a.split('||'); const [mb,sb]=b.split('||');
+      if(ma!==mb)return ma<mb?-1:1;
+      return (+sa)-(+sb);
+    });
+    keysOrden.forEach(key=>{
+      const g=grupos[key];
+      const semLbl=g.semana>0?(SEMANA_LABEL[g.semana]||`Semana ${g.semana}`):'Sin fecha';
+      // Fila de encabezado de grupo
+      h+=`<tr style="background:#7f1d1d">
+        <td colspan="6" style="color:#fff;font-weight:700;padding:6px 10px">📅 ${g.mes} — ${semLbl}</td>
+        <td colspan="3" style="color:#fca5a5;font-weight:700;text-align:right;padding:6px 10px">${g.rows.length} órdenes · ${fmt(g.total)}</td>
+      </tr>`;
+      g.rows.forEach(r=>{
+        h+=filaPend(r);
+      });
+    });
+  }else{
+    rows.forEach(r=>{ h+=filaPend(r); });
+  }
+
+  if(!h)h=`<tr><td colspan="9" style="text-align:center;color:var(--green);padding:20px;font-weight:600">✓ Sin pagos pendientes para este filtro</td></tr>`;
   document.getElementById('tbPend').innerHTML=h;
   document.getElementById('pendFoot').textContent=
     `${rows.length} órdenes pendientes · Total: ${fmt(total)}`;
+}
+
+function filaPend(r){
+  const semLbl=r.semana>0?`S${r.semana}`:'—';
+  return `<tr class="pending-row">
+    <td>${r.mes}</td>
+    <td class="ctr"><span class="badge badge-gray">${semLbl}</span></td>
+    <td class="ctr"><strong>${r.np}</strong></td>
+    <td><strong>${r.taller}</strong></td>
+    <td class="ctr">${r.cantidad||'—'}</td>
+    <td class="num">${r.precio>0?fmt(r.precio):'—'}</td>
+    <td class="num" style="color:var(--red);font-weight:700">${r.monto>0?fmt(r.monto):'—'}</td>
+    <td class="ctr">${estadoBadge(r.estado)}</td>
+    <td class="ctr">${pagoBadge(r.pago)}</td>
+  </tr>`;
 }
 
 /* ══════════════════════════════════════════════════════════════
