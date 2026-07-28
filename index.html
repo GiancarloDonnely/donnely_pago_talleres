@@ -134,6 +134,7 @@ input[type=text]:focus,select:focus{border-color:var(--blue2);box-shadow:0 0 0 2
     <div class="tab active" onclick="show('pendientes',this)">🔴 Pagos Pendientes</div>
     <div class="tab tab-hist" onclick="show('historico',this)">📊 Histórico</div>
     <div class="tab tab-det" onclick="show('detalle',this)">📋 Detalle completo</div>
+    <div class="tab tab-det" onclick="show('precios',this)">🏷️ Precios por producto</div>
   </div>
   <div class="upd" id="updLabel">Cargando...</div>
 </nav>
@@ -180,80 +181,54 @@ input[type=text]:focus,select:focus{border-color:var(--blue2);box-shadow:0 0 0 2
       <div class="kpi-val danger" id="kp4">—</div>
       <div class="kpi-sub" id="kp4s">—</div>
     </div>
-    <div class="kpi g">
-      <div class="kpi-lbl">Ya pagado (estos meses)</div>
-      <div class="kpi-val success" id="kp5">—</div>
-      <div class="kpi-sub" id="kp5s">—</div>
-    </div>
   </div>
 
-  <!-- PENDIENTE POR TALLER (cards) -->
+  <!-- SELECCIÓN POR TALLER -->
   <div class="card danger-card">
     <div class="card-ttl">
-      🏭 Deuda por taller — monto a pagar
-      <span class="badge-count" id="cntTalleres">0</span>
+      🏭 Órdenes pendientes por taller
     </div>
-    <div class="taller-grid" id="tallerGrid"></div>
-  </div>
-
-  <!-- GRÁFICO: pendiente vs pagado por mes + por taller -->
-  <div class="two">
-    <div class="card">
-      <div class="card-ttl"><span style="color:var(--red)">●</span> Pendiente vs pagado por mes (Abr–Jul 2026)</div>
-      <div class="cw" style="height:220px"><canvas id="chPendMes" role="img" aria-label="Pendiente vs pagado por mes"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-ttl"><span style="color:var(--red)">●</span> Pendiente por taller (top 10)</div>
-      <div class="cw" style="height:220px"><canvas id="chPendTaller" role="img" aria-label="Montos pendientes por taller"></canvas></div>
-    </div>
-  </div>
-
-  <!-- GRÁFICO: pendiente por semana del mes -->
-  <div class="card">
-    <div class="card-ttl">
-      <span style="color:var(--red)">●</span> Pendiente por semana del mes
-      <select id="chSemMes" onchange="buildSemChart()" style="margin-left:auto;font-size:11px">
-        <option value="">Todos los meses (Abr–Jul)</option>
-        <option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option><option>Julio 2026</option>
+    <div class="frow">
+      <span class="flbl">Selecciona un taller:</span>
+      <select id="ftTaller" onchange="renderTallerSel()" style="min-width:240px">
+        <option value="">— Elige un taller —</option>
       </select>
     </div>
-    <div class="cw" style="height:220px"><canvas id="chPendSemana" role="img" aria-label="Montos pendientes por semana del mes"></canvas></div>
+    <div id="tallerSelWrap" style="display:none">
+      <table>
+        <thead><tr>
+          <th>Mes</th><th class="ctr">N° Pedido</th><th class="ctr">OC</th><th>Taller</th>
+          <th class="ctr">Cant.</th><th class="num">Monto</th>
+          <th class="ctr">F. salida taller</th><th class="ctr">Pago</th>
+        </tr></thead>
+        <tbody id="tbTallerSel"></tbody>
+      </table>
+      <div id="tallerSelFoot" style="padding:8px 0;font-size:12px;color:var(--tx2);font-weight:600"></div>
+    </div>
+    <div id="tallerSelEmpty" style="padding:16px 0;font-size:12px;color:var(--tx2)">
+      Selecciona un taller para ver sus órdenes con pago pendiente.
+    </div>
   </div>
 
-  <!-- TABLA DETALLE PENDIENTES -->
+  <!-- TABLA DETALLE PENDIENTES (por mes, ordenado por F. salida taller) -->
   <div class="card danger-card">
     <div class="card-ttl">
       📋 Detalle de órdenes con pago pendiente
       <span class="badge-count" id="cntPend">0</span>
     </div>
     <div class="frow">
-      <span class="flbl">Ver por:</span>
-      <select id="fpVista" onchange="onVistaChange()">
-        <option value="mes">Mes</option>
-        <option value="semana">Semana del mes</option>
-      </select>
       <span class="flbl">Mes:</span>
       <select id="fpMes" onchange="renderPend()">
         <option value="">Todos los meses</option>
         <option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option><option>Julio 2026</option>
       </select>
-      <span class="flbl" id="lblSemana" style="display:none">Semana:</span>
-      <select id="fpSemana" onchange="renderPend()" style="display:none">
-        <option value="">Todas</option>
-        <option value="1">Semana 1 (1–7)</option>
-        <option value="2">Semana 2 (8–14)</option>
-        <option value="3">Semana 3 (15–21)</option>
-        <option value="4">Semana 4 (22–28)</option>
-        <option value="5">Semana 5 (29–31)</option>
-      </select>
-      <span class="flbl">Taller:</span>
-      <input type="text" id="fpTaller" placeholder="Buscar taller..." oninput="renderPend()" style="width:160px">
+      <span class="flbl" style="color:var(--tx2)">Ordenado por fecha de salida de taller ↑</span>
     </div>
     <table>
       <thead><tr>
-        <th>Mes</th><th class="ctr">Semana</th><th>N° Pedido</th><th>Taller</th>
-        <th class="ctr">Cant.</th><th class="num">Precio unit.</th>
-        <th class="num">Monto</th><th class="ctr">Estado confección</th><th class="ctr">Pago</th>
+        <th>Mes</th><th class="ctr">N° Pedido</th><th class="ctr">OC</th><th>Taller</th>
+        <th class="ctr">Cant.</th><th class="num">Monto</th>
+        <th class="ctr">F. salida taller</th>
       </tr></thead>
       <tbody id="tbPend"></tbody>
     </table>
@@ -316,13 +291,34 @@ input[type=text]:focus,select:focus{border-color:var(--blue2);box-shadow:0 0 0 2
     </div>
     <table>
       <thead><tr>
-        <th>Mes</th><th>N° Pedido</th><th>Taller</th>
+        <th>Mes</th><th>N° Pedido</th><th>Taller</th><th>Producto (Item)</th>
         <th class="ctr">Cant.</th><th class="num">Precio</th><th class="num">Monto</th>
         <th class="ctr">Estado conf.</th><th class="ctr">Pago</th>
       </tr></thead>
       <tbody id="tbDet"></tbody>
     </table>
     <div id="detFoot" style="padding:8px 0;font-size:11px;color:var(--tx2)"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ PRECIOS POR PRODUCTO ═══ -->
+<div id="precios" class="page">
+  <div class="card">
+    <div class="card-ttl">
+      <span style="color:var(--amber)">●</span> Historial de precio unitario por producto y taller
+    </div>
+    <p style="font-size:12px;color:var(--tx2);margin-bottom:14px">
+      Cada producto muestra los talleres que lo han fabricado y el precio unitario que se les ha pagado.
+      Útil para comparar cuánto cobra cada taller por el mismo item.
+    </p>
+    <div class="frow">
+      <span class="flbl">Buscar producto:</span>
+      <input type="text" id="fPrProd" placeholder="ej. MICROPOLAR, CHALECO..." oninput="renderPrecios()" style="width:220px">
+      <span class="flbl">Taller:</span>
+      <input type="text" id="fPrTaller" placeholder="Buscar taller..." oninput="renderPrecios()" style="width:170px">
+    </div>
+    <div id="preciosWrap"></div>
+    <div id="preciosFoot" style="padding:8px 0;font-size:11px;color:var(--tx2)"></div>
   </div>
 </div>
 
@@ -502,6 +498,18 @@ async function fetchSheet({mes,url,tienePago}){
     const iEst   =colOf('estado')>=0?colOf('estado'):ci(map.estado);
     // Columna "Pago" — buscar en header
     const iPago  =colOf('pago');   // -1 si no existe
+    // OC (orden de compra) — columna "Oc"
+    const iOc    =colOf('oc');
+    // Item / producto
+    const iItem  =colOf('item')>=0?colOf('item'):colOf('producto');
+    // F. salida taller (columna R) — la que NO es "real" ni "corte"
+    let iFsalida = -1;
+    hRow.forEach((h,idx)=>{
+      if(!h)return;
+      const n=norm(h);
+      if(n.includes('salida')&&n.includes('taller')&&!n.includes('real')&&!n.includes('corte')&&iFsalida<0)
+        iFsalida=idx;
+    });
     // Columna de fecha para clasificar por semana:
     // prioridad → "fecha de envio" > "fecha de confeccion total" > "fecha de salida del taller real" > "fecha entrega"
     const iFecha = colOf('fecha de envio')>=0 ? colOf('fecha de envio')
@@ -520,6 +528,9 @@ async function fetchSheet({mes,url,tienePago}){
       const estRaw=(row[iEst]||'').trim();
       const pagoRaw=iPago>=0?(row[iPago]||'').trim():'';
       const fechaRaw=iFecha>=0?(row[iFecha]||'').trim():'';
+      const oc     =iOc>=0?(row[iOc]||'').trim():'';
+      const item   =iItem>=0?(row[iItem]||'').trim():'';
+      const fSalidaRaw=iFsalida>=0?(row[iFsalida]||'').trim():'';
 
       if(!np||!taller)continue;
       if(norm(np).includes('pedido')||norm(np).includes('n°'))continue;
@@ -530,8 +541,9 @@ async function fetchSheet({mes,url,tienePago}){
       const monto=precio*cant;
       const fecha=parseFecha(fechaRaw);
       const semana=semanaDelMes(fecha);
+      const fSalida=parseFecha(fSalidaRaw);
 
-      ALL_ROWS.push({mes,np,taller:taller.toUpperCase(),cantidad:cant,precio,monto,estado:est,pago,tienePago,fecha,semana});
+      ALL_ROWS.push({mes,np,taller:taller.toUpperCase(),cantidad:cant,precio,monto,estado:est,pago,tienePago,fecha,semana,oc,item:item.toUpperCase(),fSalida});
     }
     loaded++;
   }catch(e){
@@ -560,22 +572,27 @@ function finalize(){
 
   calcPendientes();
   calcHistorico();
+  calcPrecios();
   populateFiltros();
   renderPend();
+  renderTallerSel();
   renderDet();
+  renderPrecios();
 }
 
 /* ══════════════════════════════════════════════════════════════
    PENDIENTES — cálculo y render
 ══════════════════════════════════════════════════════════════ */
+const fmtFecha = d => {
+  if(!d || !(d instanceof Date) || isNaN(d)) return '—';
+  return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+};
+
 function calcPendientes(){
-  // Filas con columna Pago (Abr-Jun 2026)
   const conPago=ALL_ROWS.filter(r=>r.tienePago);
   const pendientes=conPago.filter(r=>r.pago==='Pago pendiente');
-  const finalizados=conPago.filter(r=>r.pago==='Pago finalizado');
 
   const totalPend =pendientes.reduce((a,r)=>a+r.monto,0);
-  const totalFin  =finalizados.reduce((a,r)=>a+r.monto,0);
   const talleresPend=new Set(pendientes.map(r=>r.taller));
   const mesesPend   =new Set(pendientes.map(r=>r.mes));
 
@@ -583,193 +600,98 @@ function calcPendientes(){
   setText('kp1',fmtM(totalPend));
   setText('kp1s',`en ${pendientes.length} líneas`);
   setText('kp2',pendientes.length.toString());
-  setText('kp2s',`de ${conPago.length} órdenes en Abr-Jun 2026`);
+  setText('kp2s',`órdenes por pagar`);
   setText('kp3',talleresPend.size.toString());
   setText('kp3s','talleres con saldo pendiente');
   setText('kp4',mesesPend.size.toString());
   setText('kp4s',[...mesesPend].join(', '));
-  setText('kp5',fmtM(totalFin));
-  setText('kp5s',`${finalizados.length} órdenes ya pagadas`);
 
   // Alert banner
   setText('alertMonto',fmtM(totalPend));
   setText('alertSub',`${pendientes.length} órdenes · ${talleresPend.size} talleres · meses: ${[...mesesPend].join(', ')}`);
 
-  // Cards por taller
-  const byTaller={};
-  pendientes.forEach(r=>{
-    if(!byTaller[r.taller])byTaller[r.taller]={monto:0,ordenes:0};
-    byTaller[r.taller].monto+=r.monto;
-    byTaller[r.taller].ordenes++;
-  });
-  const tallerSorted=Object.entries(byTaller).sort((a,b)=>b[1].monto-a[1].monto);
-  document.getElementById('cntTalleres').textContent=tallerSorted.length;
-
-  let cards='';
-  tallerSorted.forEach(([t,d])=>{
-    cards+=`<div class="taller-card">
-      <div class="taller-card-name" title="${t}">🏭 ${t}</div>
-      <div class="taller-card-monto">${fmtM(d.monto)}</div>
-      <div class="taller-card-sub">${d.ordenes} orden${d.ordenes>1?'es':''}</div>
-    </div>`;
-  });
-  document.getElementById('tallerGrid').innerHTML=cards||'<p style="color:var(--tx2);font-size:12px">No hay pagos pendientes 🎉</p>';
-
-  // Gráficos pendientes
-  buildPendCharts(pendientes,finalizados,tallerSorted);
+  // Poblar selector de talleres (solo los que tienen pendientes)
+  const sel=document.getElementById('ftTaller');
+  const actual=sel.value;
+  const talleres=[...talleresPend].sort();
+  sel.innerHTML='<option value="">— Elige un taller —</option>'+
+    talleres.map(t=>`<option${t===actual?' selected':''}>${t}</option>`).join('');
 }
 
-function buildPendCharts(pend,fin,tallerSorted){
-  // CHART 1: Pendiente vs pagado por mes
-  const MESES_PAGO=['Abril 2026','Mayo 2026','Junio 2026','Julio 2026'];
-  const pendByMes=MESES_PAGO.map(m=>pend.filter(r=>r.mes===m).reduce((a,r)=>a+r.monto,0));
-  const finByMes =MESES_PAGO.map(m=>fin.filter(r=>r.mes===m).reduce((a,r)=>a+r.monto,0));
-  const shortM=m=>m.replace(' 2026','');
+/* Al seleccionar un taller: mostrar sus órdenes pendientes */
+function renderTallerSel(){
+  const t=document.getElementById('ftTaller').value;
+  const wrap=document.getElementById('tallerSelWrap');
+  const empty=document.getElementById('tallerSelEmpty');
 
-  if(CHARTS.cpm)CHARTS.cpm.destroy();
-  CHARTS.cpm=new Chart(document.getElementById('chPendMes'),{
-    type:'bar',
-    data:{
-      labels:MESES_PAGO.map(shortM),
-      datasets:[
-        {label:'Pendiente',data:pendByMes,backgroundColor:'#ef4444',borderRadius:4},
-        {label:'Pagado',   data:finByMes, backgroundColor:'#1a7a4a',borderRadius:4},
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{font:{size:10},boxWidth:10}}},
-      scales:{
-        x:{ticks:{font:{size:10}},grid:{display:false}},
-        y:{ticks:{font:{size:9},callback:v=>fmtM(v)},grid:{color:'#f0f0f0'}},
-        }}
+  if(!t){
+    wrap.style.display='none';
+    empty.style.display='';
+    return;
+  }
+  wrap.style.display='';
+  empty.style.display='none';
+
+  // Órdenes pendientes de ese taller, ordenadas por F. salida taller
+  const rows=ALL_ROWS
+    .filter(r=>r.pago==='Pago pendiente'&&r.taller===t)
+    .sort((a,b)=>{
+      const fa=a.fSalida?a.fSalida.getTime():Infinity;
+      const fb=b.fSalida?b.fSalida.getTime():Infinity;
+      return fa-fb;
+    });
+
+  const total=rows.reduce((a,r)=>a+r.monto,0);
+  let h='';
+  rows.forEach(r=>{
+    h+=`<tr class="pending-row">
+      <td>${r.mes}</td>
+      <td class="ctr"><strong>${r.np}</strong></td>
+      <td class="ctr">${r.oc||'—'}</td>
+      <td><strong>${r.taller}</strong></td>
+      <td class="ctr">${r.cantidad||'—'}</td>
+      <td class="num" style="color:var(--red);font-weight:700">${r.monto>0?fmt(r.monto):'—'}</td>
+      <td class="ctr">${fmtFecha(r.fSalida)}</td>
+      <td class="ctr">${pagoBadge(r.pago)}</td>
+    </tr>`;
   });
-
-  // CHART 2: Pendiente por taller (top 10)
-  const top10=tallerSorted.slice(0,10);
-  if(CHARTS.cpt)CHARTS.cpt.destroy();
-  CHARTS.cpt=new Chart(document.getElementById('chPendTaller'),{
-    type:'bar',
-    data:{
-      labels:top10.map(([t])=>t.length>14?t.slice(0,14)+'…':t),
-      datasets:[{label:'Pendiente',data:top10.map(([,d])=>d.monto),backgroundColor:'#ef4444',borderRadius:3}]
-    },
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
-      plugins:{legend:{display:false}},
-      scales:{
-        x:{ticks:{font:{size:9},callback:v=>fmtM(v)},grid:{color:'#f0f0f0'}},
-        y:{ticks:{font:{size:9}}},
-      }}
-  });
-
-  // CHART 3: Pendiente por semana del mes
-  buildSemChart();
+  if(!h)h=`<tr><td colspan="8" style="text-align:center;color:var(--green);padding:16px;font-weight:600">✓ Sin pagos pendientes para este taller</td></tr>`;
+  document.getElementById('tbTallerSel').innerHTML=h;
+  document.getElementById('tallerSelFoot').textContent=
+    `${rows.length} órdenes pendientes · Total a pagar: ${fmt(total)}`;
 }
 
-/* Gráfico de pendiente por semana del mes (respeta selector de mes propio) */
-function buildSemChart(){
-  const selMes=document.getElementById('chSemMes')?document.getElementById('chSemMes').value:'';
-  const pend=ALL_ROWS.filter(r=>r.pago==='Pago pendiente'&&(!selMes||r.mes===selMes));
-
-  // Sumar por semana 1-5
-  const porSem=[1,2,3,4,5].map(s=>pend.filter(r=>r.semana===s).reduce((a,r)=>a+r.monto,0));
-  const sinFecha=pend.filter(r=>!r.semana||r.semana===0).reduce((a,r)=>a+r.monto,0);
-
-  const labels=['Sem 1','Sem 2','Sem 3','Sem 4','Sem 5'];
-  const data=[...porSem];
-  if(sinFecha>0){labels.push('Sin fecha');data.push(sinFecha);}
-
-  if(CHARTS.csem)CHARTS.csem.destroy();
-  CHARTS.csem=new Chart(document.getElementById('chPendSemana'),{
-    type:'bar',
-    data:{labels,datasets:[{label:'Pendiente',data,backgroundColor:['#ef4444','#f05545','#f26647','#f47749','#f6884b','#94a3b8'],borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},
-        tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.parsed.y)}`}}},
-      scales:{
-        x:{ticks:{font:{size:10}},grid:{display:false}},
-        y:{ticks:{font:{size:9},callback:v=>fmtM(v)},grid:{color:'#f0f0f0'}},
-      }}
-  });
-}
-
-/* Mostrar/ocultar selector de semana según la vista elegida */
-function onVistaChange(){
-  const vista=document.getElementById('fpVista').value;
-  const showSem=vista==='semana';
-  document.getElementById('lblSemana').style.display=showSem?'':'none';
-  document.getElementById('fpSemana').style.display=showSem?'':'none';
-  if(!showSem)document.getElementById('fpSemana').value='';
-  renderPend();
-}
-
+/* Tabla general de pendientes por mes, ordenada por F. salida taller */
 function renderPend(){
-  const vista=document.getElementById('fpVista').value;
   const fM=document.getElementById('fpMes').value;
-  const fT=norm(document.getElementById('fpTaller').value);
-  const fS=document.getElementById('fpSemana').value;
 
-  let rows=ALL_ROWS.filter(r=>
-    r.pago==='Pago pendiente'&&
-    (!fM||r.mes===fM)&&
-    (!fT||norm(r.taller).includes(fT))&&
-    (!fS||String(r.semana)===fS)
-  );
+  const rows=ALL_ROWS
+    .filter(r=>r.pago==='Pago pendiente'&&(!fM||r.mes===fM))
+    .sort((a,b)=>{
+      const fa=a.fSalida?a.fSalida.getTime():Infinity;
+      const fb=b.fSalida?b.fSalida.getTime():Infinity;
+      return fa-fb;
+    });
 
   document.getElementById('cntPend').textContent=rows.length;
   const total=rows.reduce((a,r)=>a+r.monto,0);
 
   let h='';
-
-  if(vista==='semana'){
-    // Agrupar por Mes → Semana
-    const grupos={};
-    rows.forEach(r=>{
-      const key=`${r.mes}||${r.semana}`;
-      if(!grupos[key])grupos[key]={mes:r.mes,semana:r.semana,rows:[],total:0};
-      grupos[key].rows.push(r);
-      grupos[key].total+=r.monto;
-    });
-    // Ordenar por mes y semana
-    const keysOrden=Object.keys(grupos).sort((a,b)=>{
-      const [ma,sa]=a.split('||'); const [mb,sb]=b.split('||');
-      if(ma!==mb)return ma<mb?-1:1;
-      return (+sa)-(+sb);
-    });
-    keysOrden.forEach(key=>{
-      const g=grupos[key];
-      const semLbl=g.semana>0?(SEMANA_LABEL[g.semana]||`Semana ${g.semana}`):'Sin fecha';
-      // Fila de encabezado de grupo
-      h+=`<tr style="background:#7f1d1d">
-        <td colspan="6" style="color:#fff;font-weight:700;padding:6px 10px">📅 ${g.mes} — ${semLbl}</td>
-        <td colspan="3" style="color:#fca5a5;font-weight:700;text-align:right;padding:6px 10px">${g.rows.length} órdenes · ${fmt(g.total)}</td>
-      </tr>`;
-      g.rows.forEach(r=>{
-        h+=filaPend(r);
-      });
-    });
-  }else{
-    rows.forEach(r=>{ h+=filaPend(r); });
-  }
-
-  if(!h)h=`<tr><td colspan="9" style="text-align:center;color:var(--green);padding:20px;font-weight:600">✓ Sin pagos pendientes para este filtro</td></tr>`;
+  rows.forEach(r=>{
+    h+=`<tr class="pending-row">
+      <td>${r.mes}</td>
+      <td class="ctr"><strong>${r.np}</strong></td>
+      <td class="ctr">${r.oc||'—'}</td>
+      <td><strong>${r.taller}</strong></td>
+      <td class="ctr">${r.cantidad||'—'}</td>
+      <td class="num" style="color:var(--red);font-weight:700">${r.monto>0?fmt(r.monto):'—'}</td>
+      <td class="ctr">${fmtFecha(r.fSalida)}</td>
+    </tr>`;
+  });
+  if(!h)h=`<tr><td colspan="7" style="text-align:center;color:var(--green);padding:20px;font-weight:600">✓ Sin pagos pendientes para este filtro</td></tr>`;
   document.getElementById('tbPend').innerHTML=h;
   document.getElementById('pendFoot').textContent=
     `${rows.length} órdenes pendientes · Total: ${fmt(total)}`;
-}
-
-function filaPend(r){
-  const semLbl=r.semana>0?`S${r.semana}`:'—';
-  return `<tr class="pending-row">
-    <td>${r.mes}</td>
-    <td class="ctr"><span class="badge badge-gray">${semLbl}</span></td>
-    <td class="ctr"><strong>${r.np}</strong></td>
-    <td><strong>${r.taller}</strong></td>
-    <td class="ctr">${r.cantidad||'—'}</td>
-    <td class="num">${r.precio>0?fmt(r.precio):'—'}</td>
-    <td class="num" style="color:var(--red);font-weight:700">${r.monto>0?fmt(r.monto):'—'}</td>
-    <td class="ctr">${estadoBadge(r.estado)}</td>
-    <td class="ctr">${pagoBadge(r.pago)}</td>
-  </tr>`;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -901,6 +823,7 @@ function renderDet(){
       <td>${r.mes}</td>
       <td class="ctr">${r.np}</td>
       <td><strong>${r.taller}</strong></td>
+      <td style="font-size:11px">${r.item||'—'}</td>
       <td class="ctr">${r.cantidad||'—'}</td>
       <td class="num">${r.precio>0?fmt(r.precio):'—'}</td>
       <td class="num" style="font-weight:600;color:${isPend?'var(--red)':'var(--green)'}">${r.monto>0?fmt(r.monto):'—'}</td>
@@ -920,6 +843,85 @@ function renderDet(){
   }).length;
   document.getElementById('detFoot').textContent=
     `Mostrando ${filtered.length} de ${totalCount} registros · Total filtrado: ${fmt(total)}`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PRECIOS POR PRODUCTO → TALLER
+══════════════════════════════════════════════════════════════ */
+let PRECIOS_DATA=[];
+
+function calcPrecios(){
+  // Agrupar: Producto → Taller → { precios distintos, cantidad total, veces, último precio }
+  const byProd={};
+  ALL_ROWS.forEach(r=>{
+    if(!r.item||r.precio<=0)return;
+    if(!byProd[r.item])byProd[r.item]={};
+    const p=byProd[r.item];
+    if(!p[r.taller])p[r.taller]={precios:new Set(),cantTotal:0,veces:0,montoTotal:0};
+    p[r.taller].precios.add(r.precio);
+    p[r.taller].cantTotal+=r.cantidad;
+    p[r.taller].veces++;
+    p[r.taller].montoTotal+=r.monto;
+  });
+
+  // Aplanar a estructura ordenable
+  PRECIOS_DATA=Object.entries(byProd).map(([prod,talleres])=>{
+    const filas=Object.entries(talleres).map(([taller,d])=>({
+      taller,
+      precios:[...d.precios].sort((a,b)=>a-b),
+      cantTotal:d.cantTotal,
+      veces:d.veces,
+      montoTotal:d.montoTotal,
+    })).sort((a,b)=>b.montoTotal-a.montoTotal);
+    const montoProd=filas.reduce((a,f)=>a+f.montoTotal,0);
+    return {producto:prod, filas, montoProd, nTalleres:filas.length};
+  }).sort((a,b)=>b.montoProd-a.montoProd);
+}
+
+function renderPrecios(){
+  const fProd=norm(document.getElementById('fPrProd').value);
+  const fTaller=norm(document.getElementById('fPrTaller').value);
+
+  const filtrados=PRECIOS_DATA
+    .filter(p=>!fProd||norm(p.producto).includes(fProd))
+    .map(p=>({
+      ...p,
+      filas:p.filas.filter(f=>!fTaller||norm(f.taller).includes(fTaller))
+    }))
+    .filter(p=>p.filas.length>0)
+    .slice(0,150);
+
+  let h='';
+  filtrados.forEach(p=>{
+    h+=`<div style="margin-bottom:16px;border:.5px solid var(--bd);border-radius:8px;overflow:hidden">
+      <div style="background:var(--navy);color:#fff;padding:8px 12px;font-size:12px;font-weight:600;display:flex;justify-content:space-between">
+        <span>🏷️ ${p.producto}</span>
+        <span style="color:#9fd4f0;font-weight:400">${p.nTalleres} taller${p.nTalleres>1?'es':''}</span>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Taller</th><th class="num">Precio unitario</th>
+          <th class="ctr">Unidades totales</th><th class="ctr">N° órdenes</th>
+        </tr></thead>
+        <tbody>`;
+    p.filas.forEach(f=>{
+      // Si hay varios precios distintos, mostrarlos todos
+      const preciosStr=f.precios.map(pr=>fmt(pr)).join(' · ');
+      const varios=f.precios.length>1;
+      h+=`<tr>
+        <td><strong>${f.taller}</strong></td>
+        <td class="num" style="color:var(--green);font-weight:600">${preciosStr}${varios?' <span style="color:var(--amber);font-size:10px">(varios)</span>':''}</td>
+        <td class="ctr">${Math.round(f.cantTotal).toLocaleString('es-CL')}</td>
+        <td class="ctr">${f.veces}</td>
+      </tr>`;
+    });
+    h+=`</tbody></table></div>`;
+  });
+
+  if(!h)h='<p style="color:var(--tx2);font-size:12px;padding:16px 0">Sin resultados para ese filtro.</p>';
+  document.getElementById('preciosWrap').innerHTML=h;
+  document.getElementById('preciosFoot').textContent=
+    `${filtrados.length} producto${filtrados.length!==1?'s':''} mostrado${filtrados.length!==1?'s':''}`;
 }
 
 /* ── NAV ─────────────────────────────────────────────────────── */
