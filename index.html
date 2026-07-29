@@ -365,20 +365,20 @@ const COL_MAP = {
   'Octubre 2025':   {hr:2, np:'A', taller:'H', precio:'I', cant:'G', estado:'U'},
   'Noviembre 2025': {hr:2, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'},
   'Diciembre 2025': {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'},
-  'Enero 2026':     {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'},
-  'Febrero 2026':   {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'},
-  'Marzo 2026':     {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'},
-  'Abril 2026':     {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'}, // pago auto-detect
-  'Mayo 2026':      {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'}, // pago auto-detect
-  'Junio 2026':     {hr:3, np:'A', taller:'K', precio:'L', cant:'G', estado:'X'}, // pago auto-detect
-  'Julio 2026':     {hr:3, np:'A', taller:'K', precio:'L', cant:'G', estado:'X'}, // pago auto-detect
+  'Enero 2026':     {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', oc:'H', fsalida:'P'},
+  'Febrero 2026':   {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', oc:'H', fsalida:'P'},
+  'Marzo 2026':     {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', oc:'H', fsalida:'P'},
+  'Abril 2026':     {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', oc:'H', fsalida:'P'}, // pago auto-detect
+  'Mayo 2026':      {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', oc:'H', fsalida:'P'}, // pago auto-detect
+  'Junio 2026':     {hr:3, np:'A', taller:'K', precio:'L', cant:'G', estado:'X', oc:'J', fsalida:'R'}, // pago auto-detect
+  'Julio 2026':     {hr:3, np:'A', taller:'K', precio:'L', cant:'G', estado:'X', oc:'J', fsalida:'R'}, // pago auto-detect
 };
 
 /* ── HELPERS ─────────────────────────────────────────────────── */
 const ci   = col => col.toUpperCase().charCodeAt(0) - 65;
 const fmt  = n => (n == null || isNaN(n)) ? '—' : '$' + Math.round(n).toLocaleString('es-CL');
 const fmtM = n => n >= 1e6 ? '$' + (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? '$' + Math.round(n/1e3) + 'K' : '$' + Math.round(n);
-const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+const norm = s => (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
 
 /* ── FECHAS ──────────────────────────────────────────────────────
    Parsea fechas en formatos: dd/mm/yyyy, yyyy-mm-dd, dd-mm-yyyy,
@@ -492,30 +492,43 @@ async function fetchSheet({mes,url,tienePago}){
     if(!hRow)return;
 
     // Buscar columnas por nombre en el header (robusto)
+    // limpia saltos de línea y espacios múltiples
+    const cleanH = h => norm(String(h||'').replace(/\s+/g,' '));
     const colOf=name=>{
-      const idx=hRow.findIndex(h=>h&&norm(h).includes(norm(name)));
+      const idx=hRow.findIndex(h=>h&&cleanH(h).includes(norm(name)));
+      return idx>=0?idx:-1;
+    };
+    // Búsqueda por coincidencia EXACTA del header (para nombres cortos como "oc")
+    const colExact=(...names)=>{
+      const targets=names.map(norm);
+      const idx=hRow.findIndex(h=>h&&targets.includes(cleanH(h)));
       return idx>=0?idx:-1;
     };
 
     const iNP    =colOf('pedido')>=0?colOf('pedido'):ci(map.np);
     const iTaller=colOf('taller')>=0?colOf('taller'):ci(map.taller);
-    const iPrecio=colOf('precio ')>=0?colOf('precio '):ci(map.precio); // "precio " con espacio para no matchear "precio de corte"
+    const iPrecio=colExact('precio')>=0?colExact('precio'):ci(map.precio); // exacto: no confundir con "precio de corte"
     const iCant  =colOf('cant. pedida')>=0?colOf('cant. pedida'):ci(map.cant);
-    const iEst   =colOf('estado')>=0?colOf('estado'):ci(map.estado);
-    // Columna "Pago" — buscar en header
-    const iPago  =colOf('pago');   // -1 si no existe
-    // OC (orden de compra) — columna "Oc"
-    const iOc    =colOf('oc');
+    const iEst   =colExact('estado')>=0?colExact('estado'):ci(map.estado);
+    // Columna "Pago" — coincidencia exacta
+    const iPago  =colExact('pago');   // -1 si no existe
+    // OC (orden de compra) — header exacto "oc"; fallback a posición del COL_MAP
+    let iOc = colExact('oc','o/c','orden de compra','n° oc','oc.');
+    if(iOc<0 && map.oc) iOc = ci(map.oc);
     // Item / producto
     const iItem  =colOf('item')>=0?colOf('item'):colOf('producto');
-    // F. salida taller (columna R) — la que NO es "real" ni "corte"
-    let iFsalida = -1;
-    hRow.forEach((h,idx)=>{
-      if(!h)return;
-      const n=norm(h);
-      if(n.includes('salida')&&n.includes('taller')&&!n.includes('real')&&!n.includes('corte')&&iFsalida<0)
-        iFsalida=idx;
-    });
+    // F. salida taller — coincidencia exacta, NO "real" ni "corte"; fallback a COL_MAP
+    let iFsalida = colExact('f. salida taller','fecha salida taller','f salida taller','salida taller');
+    if(iFsalida<0){
+      // fallback: contiene salida + taller, sin real ni corte
+      hRow.forEach((h,idx)=>{
+        if(!h)return;
+        const n=cleanH(h);
+        if(n.includes('salida')&&n.includes('taller')&&!n.includes('real')&&!n.includes('corte')&&iFsalida<0)
+          iFsalida=idx;
+      });
+    }
+    if(iFsalida<0 && map.fsalida) iFsalida = ci(map.fsalida);
     // Columna de fecha para clasificar por semana:
     // prioridad → "fecha de envio" > "fecha de confeccion total" > "fecha de salida del taller real" > "fecha entrega"
     const iFecha = colOf('fecha de envio')>=0 ? colOf('fecha de envio')
