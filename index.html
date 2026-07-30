@@ -389,16 +389,23 @@ function parseFecha(s){
   if(!s)return null;
   s=String(s).trim();
   if(!s)return null;
+  let d=null;
   // yyyy-mm-dd (con o sin hora)
   let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-  if(m)return new Date(+m[1],+m[2]-1,+m[3]);
-  // dd/mm/yyyy  o  dd-mm-yyyy
-  m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
-  if(m){
-    let y=+m[3]; if(y<100)y+=2000;
-    return new Date(y,+m[2]-1,+m[1]);
+  if(m)d=new Date(+m[1],+m[2]-1,+m[3]);
+  else{
+    // dd/mm/yyyy  o  dd-mm-yyyy
+    m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+    if(m){
+      let y=+m[3]; if(y<100)y+=2000;
+      d=new Date(y,+m[2]-1,+m[1]);
+    }
   }
-  return null;
+  if(!d||isNaN(d))return null;
+  // Rechazar años absurdos (datos corruptos como 2062)
+  const yr=d.getFullYear();
+  if(yr<2020||yr>2035)return null;
+  return d;
 }
 
 /* Semana del mes: 1-5, según el día del mes.
@@ -563,7 +570,7 @@ async function fetchSheet({mes,url,tienePago}){
       const precio=parseFloat((row[iPrecio]||'').replace(/[^\d.]/g,''))||0;
       const cant  =parseFloat((row[iCant]||'').replace(/[^\d.]/g,''))||0;
       const estRaw=(row[iEst]||'').trim();
-      const pagoRaw=iPago>=0?(row[iPago]||'').trim():'';
+      let   pagoRaw=iPago>=0?(row[iPago]||'').trim():'';
       const fechaRaw=iFecha>=0?(row[iFecha]||'').trim():'';
       const oc     =iOc>=0?(row[iOc]||'').trim():'';
       const item   =iItem>=0?(row[iItem]||'').trim():'';
@@ -572,6 +579,22 @@ async function fetchSheet({mes,url,tienePago}){
       if(!np||!taller)continue;
       if(norm(np).includes('pedido')||norm(np).includes('n°'))continue;
       if(np.length>25)continue;
+
+      // ROBUSTEZ PAGO: si la celda detectada no contiene un valor de pago reconocible,
+      // escanear toda la fila buscando "pago finalizado / pagado / pago pendiente".
+      // Esto corrige desalineaciones por columnas extra o comas internas en el CSV.
+      if(tienePago){
+        const pn=norm(pagoRaw);
+        const esValido = pn.includes('pendiente')||pn.includes('finalizado')||pn.includes('pagado');
+        if(!esValido){
+          // buscar en las últimas 6 celdas de la fila (donde vive la columna Pago)
+          for(let k=row.length-1;k>=Math.max(0,row.length-6);k--){
+            const cn=norm(row[k]);
+            if(cn.includes('pago finalizado')||cn==='pagado'||cn.includes('finalizado')){pagoRaw='Pago Finalizado';break;}
+            if(cn.includes('pago pendiente')||cn==='pendiente'){pagoRaw='Pago pendiente';break;}
+          }
+        }
+      }
 
       const est =estadoNorm(estRaw);
       const pago=pagoNorm(pagoRaw);
