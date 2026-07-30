@@ -488,12 +488,24 @@ async function fetchSheet({mes,url,tienePago}){
     const rows=parseCSV(text);
     const map=COL_MAP[mes];
     if(!map)return;
-    const hRow=rows[map.hr];
+
+    // limpia saltos de línea y espacios múltiples
+    const cleanH = h => norm(String(h||'').replace(/\s+/g,' '));
+
+    // Detectar automáticamente la fila de encabezados:
+    // buscar en las primeras 6 filas la que contenga "taller" y ("estado" o "item" o "pedido")
+    let hr = map.hr;  // valor por defecto del COL_MAP
+    for(let i=0;i<Math.min(6,rows.length);i++){
+      const joined=rows[i].map(cleanH).join('|');
+      if(joined.includes('taller')&&(joined.includes('estado')||joined.includes('pedido')||joined.includes('item'))){
+        hr=i;
+        break;
+      }
+    }
+    const hRow=rows[hr];
     if(!hRow)return;
 
     // Buscar columnas por nombre en el header (robusto)
-    // limpia saltos de línea y espacios múltiples
-    const cleanH = h => norm(String(h||'').replace(/\s+/g,' '));
     const colOf=name=>{
       const idx=hRow.findIndex(h=>h&&cleanH(h).includes(norm(name)));
       return idx>=0?idx:-1;
@@ -510,8 +522,14 @@ async function fetchSheet({mes,url,tienePago}){
     const iPrecio=colExact('precio')>=0?colExact('precio'):ci(map.precio); // exacto: no confundir con "precio de corte"
     const iCant  =colOf('cant. pedida')>=0?colOf('cant. pedida'):ci(map.cant);
     const iEst   =colExact('estado')>=0?colExact('estado'):ci(map.estado);
-    // Columna "Pago" — coincidencia exacta
-    const iPago  =colExact('pago');   // -1 si no existe
+    // Columna "Pago" — exacta primero, luego contiene "pago" (sin ser otra cosa)
+    let iPago  =colExact('pago');
+    if(iPago<0){
+      iPago = hRow.findIndex(h=>{
+        const n=cleanH(h);
+        return n==='pago'||n.startsWith('pago ')||n==='estado pago'||n==='estado de pago';
+      });
+    }
     // OC (orden de compra) — header exacto "oc"; fallback a posición del COL_MAP
     let iOc = colExact('oc','o/c','orden de compra','n° oc','oc.');
     if(iOc<0 && map.oc) iOc = ci(map.oc);
@@ -537,7 +555,7 @@ async function fetchSheet({mes,url,tienePago}){
                  : colOf('fecha entrega')>=0 ? colOf('fecha entrega')
                  : -1;
 
-    for(let r=map.hr+1;r<rows.length;r++){
+    for(let r=hr+1;r<rows.length;r++){
       const row=rows[r];
       if(!row||row.every(c=>!c))continue;
       const np    =(row[iNP]||'').trim();
