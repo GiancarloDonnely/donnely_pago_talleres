@@ -489,7 +489,9 @@ async function loadAll(){
 
 async function fetchSheet({mes,url,tienePago}){
   try{
-    const res=await fetch(url,{cache:'no-cache'});
+    // anti-caché: agregar timestamp para forzar la versión más reciente del CSV publicado
+    const bust=(url.includes('?')?'&':'?')+'_cb='+Date.now();
+    const res=await fetch(url+bust,{cache:'no-store'});
     if(!res.ok)throw new Error(res.status);
     const text=await res.text();
     const rows=parseCSV(text);
