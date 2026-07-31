@@ -226,6 +226,7 @@ input[type=text]:focus,select:focus{border-color:var(--blue2);box-shadow:0 0 0 2
       <select id="fpEstadoPago" onchange="renderPend()">
         <option value="">Todas</option>
         <option value="pendiente">Pago pendiente</option>
+        <option value="proceso">Pago en proceso</option>
         <option value="finalizado">Pago finalizado</option>
       </select>
       <span class="flbl" style="color:var(--tx2)">Ordenado por fecha de salida de taller ↑</span>
@@ -291,6 +292,7 @@ input[type=text]:focus,select:focus{border-color:var(--blue2);box-shadow:0 0 0 2
       <select id="fPago" onchange="renderDet()">
         <option value="">Todos</option>
         <option value="pendiente">Pago pendiente</option>
+        <option value="proceso">Pago en proceso</option>
         <option value="finalizado">Pago finalizado</option>
         <option value="sin-col">Sin columna pago</option>
       </select>
@@ -333,21 +335,21 @@ input[type=text]:focus,select:focus{border-color:var(--blue2);box-shadow:0 0 0 2
    CONFIG — URLs por hoja
 ══════════════════════════════════════════════════════════════════ */
 const SHEETS = [
-  {mes:'Mayo 2025',      url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=925947047&single=true&output=csv',      tienePago:false},
-  {mes:'Junio 2025',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=1632684208&single=true&output=csv',     tienePago:false},
-  {mes:'Julio 2025',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=998685868&single=true&output=csv',      tienePago:false},
-  {mes:'Agosto 2025',    url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=429883639&single=true&output=csv',      tienePago:false},
-  {mes:'Septiembre 2025',url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=689406763&single=true&output=csv',      tienePago:false},
-  {mes:'Octubre 2025',   url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=2082297861&single=true&output=csv',     tienePago:false},
-  {mes:'Noviembre 2025', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=785674751&single=true&output=csv',      tienePago:false},
-  {mes:'Diciembre 2025', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=1570360447&single=true&output=csv',     tienePago:false},
-  {mes:'Enero 2026',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=1159052782&single=true&output=csv',     tienePago:false},
-  {mes:'Febrero 2026',   url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=1424143252&single=true&output=csv',     tienePago:false},
-  {mes:'Marzo 2026',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=1172504955&single=true&output=csv',     tienePago:false},
-  {mes:'Abril 2026',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=51316626&single=true&output=csv',      tienePago:true},
-  {mes:'Mayo 2026',      url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=326496781&single=true&output=csv',      tienePago:true},
-  {mes:'Junio 2026',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSd2Q0Au_IjUc0VNv362lcnuCaZaLWdf_2JbpqyXnS5f2ONVg3-8BH83tbAAavlIg/pub?gid=334207480&single=true&output=csv',      tienePago:true},
-  {mes:'Julio 2026',     url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=272373084&single=true&output=csv',      tienePago:true},
+  {mes:'Mayo 2025', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=1977520452&single=true&output=csv', tienePago:false},
+  {mes:'Junio 2025', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=1187165887&single=true&output=csv', tienePago:false},
+  {mes:'Julio 2025', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=908858762&single=true&output=csv', tienePago:false},
+  {mes:'Agosto 2025', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=127080600&single=true&output=csv', tienePago:false},
+  {mes:'Septiembre 2025', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=2055300073&single=true&output=csv', tienePago:false},
+  {mes:'Octubre 2025', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=945299558&single=true&output=csv', tienePago:false},
+  {mes:'Noviembre 2025', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=1124903847&single=true&output=csv', tienePago:false},
+  {mes:'Diciembre 2025', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=1557475176&single=true&output=csv', tienePago:false},
+  {mes:'Enero 2026', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=1454178181&single=true&output=csv', tienePago:false},
+  {mes:'Febrero 2026', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=1041898523&single=true&output=csv', tienePago:false},
+  {mes:'Marzo 2026', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=2087577184&single=true&output=csv', tienePago:false},
+  {mes:'Abril 2026', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=1402438944&single=true&output=csv', tienePago:true},
+  {mes:'Mayo 2026', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=400366452&single=true&output=csv', tienePago:true},
+  {mes:'Junio 2026', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=428666366&single=true&output=csv', tienePago:true},
+  {mes:'Julio 2026', url:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSyln8BcDOu-VY1kY2UMI4Kac1DLo6947GSDBZmHEbxWzdxckEpXOntkhVWamVDlPG5FVKSTy6qg3zV/pub?gid=272373084&single=true&output=csv', tienePago:true},
 ];
 
 /* ── COLUMN MAPS por mes ─────────────────────────────────────────
@@ -357,21 +359,21 @@ const SHEETS = [
    buscando la columna "pago" en el header.
 ──────────────────────────────────────────────────────────────── */
 const COL_MAP = {
-  'Mayo 2025':      {hr:2, np:'B', taller:'H', precio:'I', cant:'G', estado:'P'},
-  'Junio 2025':     {hr:2, np:'B', taller:'H', precio:'I', cant:'G', estado:'P'},
-  'Julio 2025':     {hr:2, np:'B', taller:'I', precio:'J', cant:'H', estado:'S'},
-  'Agosto 2025':    {hr:2, np:'A', taller:'H', precio:'I', cant:'G', estado:'U'},
-  'Septiembre 2025':{hr:2, np:'A', taller:'H', precio:'I', cant:'G', estado:'U'},
-  'Octubre 2025':   {hr:2, np:'A', taller:'H', precio:'I', cant:'G', estado:'U'},
-  'Noviembre 2025': {hr:2, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'},
-  'Diciembre 2025': {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V'},
-  'Enero 2026':     {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', oc:'H', fsalida:'P'},
-  'Febrero 2026':   {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', oc:'H', fsalida:'P'},
-  'Marzo 2026':     {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', oc:'H', fsalida:'P'},
-  'Abril 2026':     {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', oc:'H', fsalida:'P'}, // pago auto-detect
-  'Mayo 2026':      {hr:3, np:'A', taller:'I', precio:'J', cant:'G', estado:'V', oc:'H', fsalida:'P'}, // pago auto-detect
-  'Junio 2026':     {hr:3, np:'A', taller:'K', precio:'L', cant:'G', estado:'X', oc:'J', fsalida:'R'}, // pago auto-detect
-  'Julio 2026':     {hr:3, np:'A', taller:'K', precio:'L', cant:'G', estado:'X', oc:'J', fsalida:'R'}, // pago auto-detect
+  'Mayo 2025':      {hr:2, np:'B', item:'F', cant:'G', taller:'H', precio:'I', fsalida:'L', estado:'P'},
+  'Junio 2025':     {hr:2, np:'B', item:'F', cant:'G', taller:'H', precio:'I', fsalida:'L', estado:'P'},
+  'Julio 2025':     {hr:2, np:'B', item:'G', cant:'H', taller:'I', precio:'J', fsalida:'M', estado:'S'},
+  'Agosto 2025':    {hr:2, np:'A', item:'F', cant:'G', taller:'H', precio:'I', fsalida:'O', estado:'U'},
+  'Septiembre 2025':{hr:2, np:'A', item:'F', cant:'G', taller:'H', precio:'I', fsalida:'O', estado:'U'},
+  'Octubre 2025':   {hr:2, np:'A', item:'F', cant:'G', taller:'H', precio:'I', fsalida:'O', estado:'U'},
+  'Noviembre 2025': {hr:2, np:'A', item:'F', cant:'G', oc:'H', taller:'I', precio:'J', fsalida:'P', estado:'V'},
+  'Diciembre 2025': {hr:3, np:'A', item:'F', cant:'G', oc:'H', taller:'I', precio:'J', fsalida:'P', estado:'V'},
+  'Enero 2026':     {hr:3, np:'A', item:'F', cant:'G', oc:'H', taller:'I', precio:'J', fsalida:'P', estado:'V'},
+  'Febrero 2026':   {hr:3, np:'A', item:'F', cant:'G', oc:'H', taller:'I', precio:'J', fsalida:'P', estado:'V'},
+  'Marzo 2026':     {hr:3, np:'A', item:'F', cant:'G', oc:'H', taller:'I', precio:'J', fsalida:'P', estado:'V'},
+  'Abril 2026':     {hr:3, np:'A', item:'F', cant:'G', oc:'H', taller:'I', precio:'J', fsalida:'P', estado:'V', pago:'W'},
+  'Mayo 2026':      {hr:3, np:'A', item:'F', cant:'G', oc:'H', taller:'I', precio:'J', fsalida:'P', estado:'V', pago:'W'},
+  'Junio 2026':     {hr:2, np:'A', item:'F', cant:'G', oc:'J', taller:'K', precio:'L', fsalida:'R', estado:'X', pago:'Y'},
+  'Julio 2026':     {hr:2, np:'A', item:'F', cant:'G', oc:'J', taller:'K', precio:'L', fsalida:'R', estado:'X', pago:'Y'},
 };
 
 /* ── HELPERS ─────────────────────────────────────────────────── */
@@ -454,6 +456,7 @@ function estadoNorm(e){
 
 function pagoNorm(p){
   if(!p)return'';const l=norm(p);
+  if(l.includes('proceso'))return'Pago en proceso';
   if(l.includes('pendiente'))return'Pago pendiente';
   if(l.includes('finalizado')||l.includes('pagado'))return'Pago finalizado';
   return p;
@@ -470,6 +473,7 @@ function estadoBadge(e){
 function pagoBadge(p){
   if(!p)return`<span class="badge badge-gray">—</span>`;
   if(p==='Pago pendiente')return`<span class="badge badge-pend">⚠ Pago pendiente</span>`;
+  if(p==='Pago en proceso')return`<span class="badge badge-conf">⏳ En proceso</span>`;
   if(p==='Pago finalizado')return`<span class="badge badge-fin">✓ Pagado</span>`;
   return`<span class="badge badge-gray">${p}</span>`;
 }
@@ -527,11 +531,31 @@ async function fetchSheet({mes,url,tienePago}){
     };
 
     const iNP    =colOf('pedido')>=0?colOf('pedido'):ci(map.np);
-    const iTaller=colOf('taller')>=0?colOf('taller'):ci(map.taller);
-    const iPrecio=colExact('precio')>=0?colExact('precio'):ci(map.precio); // exacto: no confundir con "precio de corte"
+    // Taller: EXACTO primero. Evitar "Pendiente Taller ⚙", "F. entrada taller",
+    // "F. salida taller", etc. que también contienen la palabra "taller".
+    let iTaller  =colExact('taller');
+    if(iTaller<0){
+      iTaller = hRow.findIndex(h=>{
+        const n=cleanH(h);
+        return n.includes('taller')
+            && !n.includes('pendiente') && !n.includes('salida')
+            && !n.includes('entrada')   && !n.includes('atraso')
+            && !n.includes('dia')       && !n.includes('día');
+      });
+    }
+    if(iTaller<0) iTaller = ci(map.taller);
+    // Precio: exacto "precio" o "precio confeccion" (Julio 2026); nunca "precio de corte"
+    let iPrecio  =colExact('precio','precio confeccion','precio de confeccion');
+    if(iPrecio<0){
+      iPrecio = hRow.findIndex(h=>{
+        const n=cleanH(h);
+        return n.includes('precio')&&!n.includes('corte');
+      });
+    }
+    if(iPrecio<0) iPrecio = ci(map.precio);
     const iCant  =colOf('cant. pedida')>=0?colOf('cant. pedida'):ci(map.cant);
     const iEst   =colExact('estado')>=0?colExact('estado'):ci(map.estado);
-    // Columna "Pago" — exacta primero, luego contiene "pago" (sin ser otra cosa)
+    // Columna "Pago" — exacta primero, luego variantes, luego COL_MAP
     let iPago  =colExact('pago');
     if(iPago<0){
       iPago = hRow.findIndex(h=>{
@@ -539,6 +563,7 @@ async function fetchSheet({mes,url,tienePago}){
         return n==='pago'||n.startsWith('pago ')||n==='estado pago'||n==='estado de pago';
       });
     }
+    if(iPago<0 && map.pago) iPago = ci(map.pago);
     // OC (orden de compra) — header exacto "oc"; fallback a posición del COL_MAP
     let iOc = colExact('oc','o/c','orden de compra','n° oc','oc.');
     if(iOc<0 && map.oc) iOc = ci(map.oc);
@@ -587,12 +612,13 @@ async function fetchSheet({mes,url,tienePago}){
       // Esto corrige desalineaciones por columnas extra o comas internas en el CSV.
       if(tienePago){
         const pn=norm(pagoRaw);
-        const esValido = pn.includes('pendiente')||pn.includes('finalizado')||pn.includes('pagado');
+        const esValido = pn.includes('pendiente')||pn.includes('finalizado')||pn.includes('pagado')||pn.includes('proceso');
         if(!esValido){
           // buscar en las últimas 6 celdas de la fila (donde vive la columna Pago)
           for(let k=row.length-1;k>=Math.max(0,row.length-6);k--){
             const cn=norm(row[k]);
             if(cn.includes('pago finalizado')||cn==='pagado'||cn.includes('finalizado')){pagoRaw='Pago Finalizado';break;}
+            if(cn.includes('pago en proceso')||cn.includes('en proceso')){pagoRaw='Pago En Proceso';break;}
             if(cn.includes('pago pendiente')||cn==='pendiente'){pagoRaw='Pago pendiente';break;}
           }
         }
@@ -734,9 +760,10 @@ function renderPend(){
       if(!r.tienePago)return false;
       if(fM&&r.mes!==fM)return false;
       if(fEP==='pendiente'&&r.pago!=='Pago pendiente')return false;
+      if(fEP==='proceso'&&r.pago!=='Pago en proceso')return false;
       if(fEP==='finalizado'&&r.pago!=='Pago finalizado')return false;
-      // "Todas" (fEP vacío): solo pendiente o finalizado (excluir vacíos)
-      if(!fEP&&r.pago!=='Pago pendiente'&&r.pago!=='Pago finalizado')return false;
+      // "Todas" (fEP vacío): cualquier estado de pago conocido (excluir vacíos)
+      if(!fEP&&r.pago!=='Pago pendiente'&&r.pago!=='Pago finalizado'&&r.pago!=='Pago en proceso')return false;
       return true;
     })
     .sort((a,b)=>{
@@ -888,6 +915,7 @@ function renderDet(){
     if(fT&&!norm(r.taller).includes(fT))return false;
     if(fE&&!norm(r.estado).includes(fE))return false;
     if(fP==='pendiente'&&r.pago!=='Pago pendiente')return false;
+    if(fP==='proceso'&&r.pago!=='Pago en proceso')return false;
     if(fP==='finalizado'&&r.pago!=='Pago finalizado')return false;
     if(fP==='sin-col'&&r.tienePago)return false;
     return true;
@@ -915,6 +943,7 @@ function renderDet(){
     if(fT&&!norm(r.taller).includes(fT))return false;
     if(fE&&!norm(r.estado).includes(fE))return false;
     if(fP==='pendiente'&&r.pago!=='Pago pendiente')return false;
+    if(fP==='proceso'&&r.pago!=='Pago en proceso')return false;
     if(fP==='finalizado'&&r.pago!=='Pago finalizado')return false;
     if(fP==='sin-col'&&r.tienePago)return false;
     return true;
